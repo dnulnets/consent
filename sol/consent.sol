@@ -1,11 +1,12 @@
 pragma solidity ^0.4.11;
 
 /*
- * This is the contract that handles consents given by a user to another user.
+ * This is the contract that handles consents for a specific purpouse given by a
+ * user to another user.
  *
- * It basically provides an offering that is either accepted or denied by a user.
+ * It basically provides a textual description  that is either accepted or denied by a user.
  *
- * Written by Tomas Stenlund, Permobil AB
+ * Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
  *
  */
 contract Consent {
@@ -40,6 +41,7 @@ contract Consent {
         title = _title;
         text = _text;
         giver = _giver;
+	status = Status.offered;
         owner = msg.sender;
     }
     
