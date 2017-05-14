@@ -1,3 +1,3 @@
 # Consent Handling Prototype
-Consent handling prototyping with an ethereum blockchain using PoA.
+Consent handling prototye with an ethereum blockchain using PoA.
 
