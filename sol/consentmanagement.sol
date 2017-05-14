@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-/*
+/* 
  * This is the contract that handles consents given by a user to another user.
  *
  * It basically provides an offering that is either accepted or denied by a user.
@@ -8,7 +8,7 @@ pragma solidity ^0.4.11;
  * Written by Tomas Stenlund, Permobil AB
  *
  */
-contract Consent {
+contract ConsentManagement {
 
     /* Enumeration for the state of the consent */
     enum Status {denied, accepted, offered }
@@ -33,7 +33,7 @@ contract Consent {
     
     /* This function is executed at initialization and sets the owner and the giver of the consent */
     /* as well as what it contains */
-    function Consent(string _purpouse, uint16 _version, string _title, string _text, address _giver) public
+    function ConsentManagement(string _purpouse, uint16 _version, string _title, string _text, address _giver) public
     { 
         purpouse = _purpouse;
         version = _version;
