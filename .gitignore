@@ -9,7 +9,10 @@ tramp
 .\#*
 
 #consent
-consent/generated/*
+sol/generated/*
+sol/generated
+node/node_modules/*
+node/node_modules
 
 # solc
 *.abi
