@@ -1,22 +1,20 @@
-all: consent consentmanagement
+all: generated consent consentmanagement
 	@echo "Done!"
 
-consentmanagement: ConsentManagement.abi ConsentManagement.bin
+generated:
+	mkdir generated
 
-ConsentManagement.bin: consentmanagement.sol
-	solc --overwrite --bin -o . consentmanagement.sol
+consent: generated/consent.json
 
-ConsentManagement.abi: consentmanagement.sol
-	solc --overwrite --abi -o . consentmanagement.sol
+consentmanagement: generated/consentmanagement.json
 
-consent: Consent.bin Consent.abi
+generated/consentmanagement.json: consentmanagement.sol
+	solc --combined-json abi,bin consentmanagement.sol > generated/consentmanagement.json
 
-Consent.bin: consent.sol
-	solc --overwrite --bin -o . consent.sol
-
-Consent.abi: consent.sol
-	solc --overwrite --abi -o . consent.sol
+generated/consent.json: consent.sol
+	solc --combined-json abi,bin consent.sol > generated/consent.json
 
 clean:
-	@rm -f *.abi *.bin
+	@rm -fR generated
+
 
