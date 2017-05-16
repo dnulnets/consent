@@ -117,6 +117,8 @@ contract ConsentFactory {
     event ConsentManagementEvent(uint256 logTimestamp, uint256 eventTimestamp, string operation, string value);
 
     event ConsentCreateEvent(address indexed user, address consent);
+
+    event ConsentEvent ();
     
     /* Sends the event */
     function sendEvent (uint256 eventTimestamp, string _operation, string _value)
@@ -146,14 +148,15 @@ contract ConsentFactory {
     }
 
     /* Create a consent for a specific purpouse of the lates version */
-    function test1 (address _user, string _purpouse) onlyBy (owner)
+    function test1 ()
     {
-      ConsentCreateEvent (_user, owner);
+      ConsentEvent ();
     }
 
-    function test2 (address _user, string _purpouse) onlyBy (owner) returns (string)
+    string whadda = "Test of string";
+    function test2 () constant returns (string)
     {
-      return "Teststräng";
+      return whadda;
     }    
         
     /* Function to recover the funds on the contract */

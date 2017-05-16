@@ -1,5 +1,18 @@
 //
-// Make sure we got the libraries needed
+// Test to create a consent from the factory.
+//
+// It generates a consent factory contract and returns with the
+// contract address to be used for consent generation and handling.
+// 
+// Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+//
+if (process.argv.length != 3) {
+    console.log('USAGE: node ' + process.argv[1] + ' <password to unlock coinbase>');
+    return;
+}
+
+//
+// Make sure we got the libraries needed and uses the correct geth node
 //
 var Web3 = require('web3');
 var fs = require('fs');
@@ -11,36 +24,49 @@ if (typeof web3 !== 'undefined') {
 }
 
 //
-// Create the contracts proxies and the initial managament contract
+// Create the contracts binary interface
 //
 var consentSRC = fs.readFileSync('../sol/generated/consent.json')
-var consentManagementSRC = fs.readFileSync('../sol/generated/consentmanagement.json')
-
 var consentContracts = JSON.parse(consentSRC)["contracts"];
-var consentManagementContracts = JSON.parse(consentManagementSRC)["contracts"];
 
-var consentProxy = web3.eth.contract (eval(consentContracts["consent.sol:Consent"].abi));
-var consentManagementProxy = web3.eth.contract (eval(consentManagementContracts["consentmanagement.sol:ConsentManagement"].abi));
+var consentContract = web3.eth.contract (eval(consentContracts["consent.sol:Consent"].abi));
+var consentBinary = "0x" + consentContracts["consent.sol:Consent"].bin;
+var consentFactoryContract = web3.eth.contract (eval(consentContracts["consent.sol:ConsentFactory"].abi));
+var consentFactoryBinary = "0x" + consentContracts["consent.sol:ConsentFactory"].bin;
 
-web3.personal.unlockAccount(web3.eth.coinbase, "mandelmassa");
+//
+// Create the initial consent factory, we assume that the coinbase and password is
+// the first argument to the javascript
+//
+console.log ('Using account ' + web3.eth.coinbase);
 web3.eth.defaultAccount = web3.eth.coinbase;
+try {
+    web3.personal.unlockAccount(web3.eth.coinbase, process.argv[2]);
+} catch (e) {
+    console.log(e);
+    return;
+}
 
 //
-// Get hold of our current consent management contract
+// Get hold of our current consent factory contract. Currently the contract address is
+// hardcoded.
 //
-// 0x6d9392b122222dd2e1f9ff8d2bcb89e052ef930f
+// 0xa02b5230984604eabcc59b785b0ad355f11311b2
 //
 
-var consentManagement = consentManagementProxy.at("0x6d9392b122222dd2e1f9ff8d2bcb89e052ef930f");
+var consentFactory = consentFactoryContract.at("0xa02b5230984604eabcc59b785b0ad355f11311b2");
 
-var event = consentManagement.ConsentCreateEvent({}, function(error, result) {
+//
+// Catch all events
+//
+var event = consentFactory.allEvents(function(error, result) {
     if (!error)
-        console.log(result.args);
+        console.log(result);
     else
         console.log(error);
 });
 
-var txhash = consentManagement.createConsent ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7", "Product development");
+var txhash = consentFactory.test1 ()
 console.log("Your consent contract creation is being deployed in transaction " + txhash);
 
 function waitForTransaction (txhash) {
@@ -55,4 +81,4 @@ function waitForTransaction (txhash) {
     });
 }
 
-waitForTransaction(txhash);
+//waitForTransaction(txhash);
