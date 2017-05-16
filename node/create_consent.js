@@ -51,10 +51,8 @@ try {
 // Get hold of our current consent factory contract. Currently the contract address is
 // hardcoded.
 //
-// 0xa02b5230984604eabcc59b785b0ad355f11311b2
-//
 
-var consentFactory = consentFactoryContract.at("0xa02b5230984604eabcc59b785b0ad355f11311b2");
+var consentFactory = consentFactoryContract.at("0x8c85fa73bb6e16a32dcf6661b7d2a976e25780ca");
 
 //
 // Catch all events
@@ -66,7 +64,8 @@ var event = consentFactory.allEvents(function(error, result) {
         console.log(error);
 });
 
-var txhash = consentFactory.test1 ()
+//var txhash = consentFactory.test1 ();
+var txhash = consentFactory.createConsent ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7","VSC");
 console.log("Your consent contract creation is being deployed in transaction " + txhash);
 
 function waitForTransaction (txhash) {

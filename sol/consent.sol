@@ -17,20 +17,11 @@ contract Consent {
     /* Define variable owner of the type address*/
     address owner;  /* Who wants to get the consent */
     address giver;  /* Who gives the consent, address to the identity contract */
-    Status  status; /* The status of the consent */
+    Status  private status; /* The status of the consent */
     string  purpouse;     /* What purpouse the consent is for */ 
     uint16  version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
     string  title;        /* The title of the consent */
     string  text;         /* The text that describes the purpouse of the consent */
-
-    /* Event that signals changes in a contract */    
-    event ConsentEvent(uint256 logTimestamp, uint256 eventTimestamp, string operation, string value);
-
-    /* Sends the event */
-    function sendEvent (uint256 eventTimestamp, string _operation, string _value)
-    {
-        ConsentEvent (block.timestamp, eventTimestamp, _operation, _value);
-    }
     
     /* This function is executed at initialization and sets the owner and the giver of the consent */
     /* as well as what it contains */
@@ -56,42 +47,12 @@ contract Consent {
     function setStatus(Status _status) onlyBy (giver)
     {
         status = _status;
-        if (status == Status.accepted)
-            sendEvent (block.timestamp, "set status", "accepted");
-        if (status == Status.denied)
-            sendEvent (block.timestamp, "set status", "denied");
-        if (status == Status.offered)
-            sendEvent (block.timestamp, "set status", "offered");
     }
 
     /* Returns the status of the consent */    
     function getStatus() returns (Status)
     {
         return status;    
-    }
-
-    /* Returns with the purpose of the consent */
-    function getPurpouse() returns (string)
-    {
-        return purpouse;
-    }
-
-    /* Returns with the version of the consent. It is the purpose that the version number is connected */
-    function getVersion () returns (uint16)
-    {
-        return version;    
-    }
-
-    /* Returns with the title of the consent */
-    function getTitle() returns (string)
-    {
-        return title;    
-    }
-
-    /* Returns with the text of the consent */
-    function getText() returns (string)
-    {
-        return text;    
     }
     
     /* Function to recover the funds on the contract */
@@ -113,18 +74,10 @@ contract ConsentFactory {
     /* Define variable owner of the type address*/
     address owner;  /* Who owns this contract */
   
-    /* Event that signals changes in this contract */    
-    event ConsentManagementEvent(uint256 logTimestamp, uint256 eventTimestamp, string operation, string value);
-
+    /* Events */
     event ConsentCreateEvent(address indexed user, address consent);
 
     event ConsentEvent ();
-    
-    /* Sends the event */
-    function sendEvent (uint256 eventTimestamp, string _operation, string _value)
-    {
-        ConsentManagementEvent (block.timestamp, eventTimestamp, _operation, _value);
-    }
     
     /* This function is executed at initialization and sets the owner and the giver of the consent */
     /* as well as what it contains */
@@ -143,8 +96,8 @@ contract ConsentFactory {
     /* Create a consent for a specific purpouse of the lates version */
     function createConsent (address _user, string _purpouse) onlyBy (owner)
     {
-      address consent = new Consent (_purpouse, 1, "Product development", "I give Permobil AB consent to use the data collected ...", _user);
-      ConsentCreateEvent (_user, consent);
+      //address consent = new Consent (_purpouse, 1, "Product development", "I give Permobil AB consent to use the data collected ...", _user);
+      ConsentCreateEvent (_user, _user);
     }
 
     /* Create a consent for a specific purpouse of the lates version */
