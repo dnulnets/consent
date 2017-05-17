@@ -52,20 +52,21 @@ try {
 // hardcoded.
 //
 
-var consentFactory = consentFactoryContract.at("0x8c85fa73bb6e16a32dcf6661b7d2a976e25780ca");
+var consentFactory = consentFactoryContract.at("0xaee7bee6a0ccf5985d54f6fd5f238ab18d785bf5");
 
 //
 // Catch all events
 //
-var event = consentFactory.allEvents(function(error, result) {
-    if (!error)
-        console.log(result);
+var event = consentFactory.allEvents(function (err,res) {
+    if (!err)
+        console.log(res);
     else
-        console.log(error);
+        console.log(err);
 });
 
-//var txhash = consentFactory.test1 ();
-var txhash = consentFactory.createConsent ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7","VSC");
+//var txhash = consentFactory.test1.sendTransaction ({from: web3.eth.coinbase, gas: 4000000});
+//var txhash = consentFactory.createConsent ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7","VSC");
+var txhash = consentFactory.createConsent.sendTransaction ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7","VSC", {from: web3.eth.coinbase, gas: 4000000});
 console.log("Your consent contract creation is being deployed in transaction " + txhash);
 
 function waitForTransaction (txhash) {
