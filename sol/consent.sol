@@ -106,10 +106,27 @@ contract ConsentFactory {
   {
     consentPurpouses[_purpouse].exist = true;
     consentPurpouses[_purpouse].consentTemplates[_languageCountry] = ConsentTemplate ({version: _version, title: _title, text: _text});
-    
+  }
+
+  /* Remove an entire purpouse */
+  /* NOTE TO SELF: delete really does not delete any of the mappings, do better later on */
+  function removePurpouse (string _purpouse)
+  {
+    delete consentPurpouses[_purpouse];
+    consentPurpouses[_purpouse].exist = false;
+  }
+
+  /* Remove a specific country and language combination of a purpouse */
+  /* NOTE TO SELF: delete really does not delete any of the mappings, do better later on */
+  function removeConsentTemplate (string _purpouse, string _languageCountry)
+  {
+    delete consentPurpouses[_purpouse].consentTemplates[_languageCountry];
   }
   
-  /* Create a consent for a specific purpouse of the lates version */
+  /* Create a consent for a specific purpouse of the latest version, language and country.
+   *
+   * Country and Purpouse must exist otherwise it will fail, if language is not there it will
+   * default to countrys default language if it exists otherwise it will fail. */
   function createConsent (address _user, string _purpouse, string _languageCountry)
   {
     address consent = new Consent (_user, _purpouse, 1, "Product development",
