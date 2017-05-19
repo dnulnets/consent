@@ -15,8 +15,8 @@ contract Consent {
     enum Status {denied, accepted, offered }
     
     /* Define variable owner of the type address*/
-    address owner;  /* Who wants to get the consent */
-    address giver;  /* Who gives the consent, address to the identity contract */
+    address owner;  /* Who wants to get the consent, address to the account. Should be an identity contract */
+    address giver;  /* Who gives the consent, address to the account. Should be an identity contract */
     Status  private status; /* The status of the consent */
     string  purpouse;     /* What purpouse the consent is for */ 
     uint16  version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
@@ -28,7 +28,7 @@ contract Consent {
     /* This function is executed at initialization and sets the owner and the giver of the consent */
     /* as well as what it contains */
     function Consent(address _giver, string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
-    { 
+    {
         purpouse = _purpouse;
         version = _version;
         title = _title;
