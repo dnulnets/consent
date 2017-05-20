@@ -9,9 +9,9 @@ var Web3 = require('web3');
 var fs = require('fs');
 
 //
-// The Permobil object
+// The Consent Factory object
 //
-ConsentFactory = function (password, account) {
+var ConsentFactory = function (password, account) {
 
     //
     // Get hold of the configuration

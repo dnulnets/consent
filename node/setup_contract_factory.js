@@ -8,10 +8,24 @@
 // Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
 //
 
-var init = require ('./init.js');
-var consent = require ('./consent.js');
+var ConsentFactory = require ('./consentfactory.js');
 
-console.log('Configuration = ' + init.config.web3url);
+//
+// Check arguments
+//
+if (process.argv.length < 3 || process.argv.length > 4) {
+    console.log('node ' + process.arg[1]+' <password to unlock account> [account]');
+    return;
+}
+
+//
+// Create the new consent factory
+//
+if (process.argv.length == 3)
+    consent = new ConsentFactory (process.argv[2]);
+else
+    consent = new ConsentFactory (process.argv[2], process.argv[3]);
+
 
 //
 // Define some functions to be used
@@ -47,6 +61,6 @@ function addSomeConsentTemplates (factory)
 
 // Create the factory for the consents
 //
-console.log ("Creating a new consent factory");
-init.newConsentFactory (init.config.account, 2000000, contractMined);
+//console.log ("Creating a new consent factory");
+//init.newConsentFactory (init.config.account, 2000000, contractMined);
 
