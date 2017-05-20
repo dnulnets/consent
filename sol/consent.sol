@@ -12,7 +12,7 @@ pragma solidity ^0.4.11;
 contract Consent {
 
     /* Enumeration for the state of the consent */
-    enum Status {denied, accepted, offered }
+    enum Status {denied, accepted, offered}
     
     /* Define variable owner of the type address*/
     address owner;  /* Who wants to get the consent, address to the account. Should be an identity contract */
@@ -24,7 +24,7 @@ contract Consent {
     string  text;         /* The text that describes the purpouse of the consent */
     string  languageCountry;       /* Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
 				    * separated by a dash, so for swedish in Sweden it is sv-SE */
-    
+
     /* This function is executed at initialization and sets the owner and the giver of the consent */
     /* as well as what it contains */
     function Consent(address _giver, string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
@@ -67,6 +67,10 @@ contract Consent {
  */
 contract ConsentFactory {
 
+  /* Enumeration for errors */
+  enum Error {no_such_template /* If no such template exists for the purpouse, language and country */
+  }
+  
   /* The owner of this contract */
   address owner;  /* Who owns this contract */
 
@@ -93,8 +97,9 @@ contract ConsentFactory {
   mapping (string => ConsentLanguageCountry) consentPurpouses;
   
   /* Events generated when the consent has been created */
-  event ConsentCreatedEvent(address indexed user, address consent);
-
+  event ConsentFactoryCreatedEvent(address indexed user, address consent);
+  event ConsentFactoryFailedEvent(address indexed user, Error error);
+  
   /* Constructor for the consent factory */
   function ConsentFactory() public
   { 
@@ -122,17 +127,60 @@ contract ConsentFactory {
   {
     delete consentPurpouses[_purpouse].consentTemplates[_languageCountry];
   }
-  
+    
   /* Create a consent for a specific purpouse of the latest version, language and country.
    *
    * Country and Purpouse must exist otherwise it will fail, if language is not there it will
    * default to countrys default language if it exists otherwise it will fail. */
   function createConsent (address _user, string _purpouse, string _languageCountry)
   {
-    address consent = new Consent (_user, _purpouse, 1, "Product development",
-				   "I give Permobil AB consent to use the data collected ...",
-				   _languageCountry);
-    ConsentCreatedEvent(_user, consent);
+    address consent;
+    ConsentTemplate memory ct = getTemplate (_purpouse, _languageCountry);
+
+    /* Did we get the template ?*/
+    if (ct.version > 0) {
+      consent = new Consent (_user, _purpouse, ct.version, ct.title, ct.text, _languageCountry);
+      ConsentFactoryCreatedEvent(_user, consent);
+    } else {
+      ConsentFactoryFailedEvent(_user, Error.no_such_template);
+    }
+  }
+
+  /* This function checks to see that there is a consent to be generated */
+  function hasConsent (string _purpouse, string _languageCountry) constant returns (bool)
+  {
+    return (getTemplate (_purpouse, _languageCountry).version != 0);
+  }
+  
+  /* This function tests wether a consent for a specific purpouse exists or not */
+  function getTemplate (string _purpouse, string _languageCountry) constant internal returns (ConsentTemplate)
+  {
+    ConsentTemplate memory ct = ConsentTemplate({version:0, title: "", text: ""});
+
+    /* Get the consents for a specific purpouse */
+    ConsentLanguageCountry clc = consentPurpouses[_purpouse];
+    if (clc.exist) {
+
+      /* Get the specific consent for the language and country */
+      ct = clc.consentTemplates[_languageCountry];
+      if (ct.version==0) {
+
+	/* Fallback here is to only go for the default language of the country */
+	/* So we need to strip the language from the country */
+	bytes memory b = bytes (_languageCountry);
+	if (b.length==5) {
+	  if (b[2] == 45) {
+	    bytes memory c = new bytes(2);
+	    c[0] = b[3];
+	    c[1] = b[4];	    
+	    ct = clc.consentTemplates[string(c)];
+	  }
+	}
+      }
+    }
+
+    /* No template found */
+    return ct;
   }
   
   /* Function to recover the funds on the contract */

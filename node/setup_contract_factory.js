@@ -8,60 +8,45 @@
 // Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
 //
 
-if (process.argv.length != 3) {
-    console.log('node setup_contract_factory.js <password to unlock coinbase>');
-    return;
-}
-//
-// Make sure we got the libraries needed and uses the correct geth node
-//
-var Web3 = require('web3');
-var fs = require('fs');
-if (typeof web3 !== 'undefined') {
-  web3 = new Web3(web3.currentProvider);
-} else {
-  // set the provider you want from Web3.providers
-  web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-}
+var init = require ('./init.js');
+var consent = require ('./consent.js');
+
+console.log('Configuration = ' + init.config.web3url);
 
 //
-// Create the contracts binary interface
+// Define some functions to be used
 //
-var consentSRC = fs.readFileSync('../sol/generated/consent.json')
-var consentContracts = JSON.parse(consentSRC)["contracts"];
-
-var consentContract = web3.eth.contract (eval(consentContracts["consent.sol:Consent"].abi));
-var consentBinary = "0x" + consentContracts["consent.sol:Consent"].bin;
-var consentFactoryContract = web3.eth.contract (eval(consentContracts["consent.sol:ConsentFactory"].abi));
-var consentFactoryBinary = "0x" + consentContracts["consent.sol:ConsentFactory"].bin;
-
-//
-// Create the initial consent factory, we assume that the coinbase and password is
-// the first argument to the javascript
-//
-console.log ('Using account ' + web3.eth.coinbase);
-try {
-    web3.personal.unlockAccount(web3.eth.coinbase, process.argv[2]);
-} catch (e) {
-    console.log(e);
-    return;
-}
-
-var consentFactory = consentFactoryContract.new ({from: web3.eth.coinbase, gas: 2000000, data: consentFactoryBinary});
-console.log("Your consent factory contract is being deployed in transaction " + consentFactory.transactionHash);
-
-//
-// Wait for the transaction to finish
-//
-function waitForTransaction (txhash) {
-    filter = web3.eth.filter('latest');
-    filter.watch(function(error, result) {
-	var receipt = web3.eth.getTransactionReceipt(txhash);
-	if (receipt && receipt.transactionHash == txhash) {
-            console.log("Your consent factory contract got address " + receipt.contractAddress);
-            filter.stopWatching();
+function contractMined (error,result)
+{
+    if (!error) {
+	if (result.address!=undefined) {
+            console.log("Your consent factory contract is mined and got address " + result.address);
+	    addSomeConsentTemplates(result.address);
 	}
-    });
+    }
 }
 
-waitForTransaction (consentFactory.transactionHash);
+function newTemplatesMined (error,result)
+{
+    if (!error) {
+	console.log ("Your new consent templates got sent as a transaction");
+	console.log (result);
+    } else {
+	console.log ("Your new consent templates was not able to be sent");
+	console.log (err);
+    }
+}
+
+function addSomeConsentTemplates (factory)
+{
+    consentFactory = init.getConsentFactory (factory);
+    console.log ("Adding some consent templates");
+    consentFactory.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis...", "sv-SE", newTemplatesMined);
+    consentFactory.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis...", "SE", newTemplatesMined);
+}
+
+// Create the factory for the consents
+//
+console.log ("Creating a new consent factory");
+init.newConsentFactory (init.config.account, 2000000, contractMined);
+
