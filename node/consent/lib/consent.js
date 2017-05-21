@@ -13,7 +13,7 @@ var fs = require('fs');
 //
 var ConsentHandler = function (password, account) {
 
-    //
+        //
     // Get hold of the configuration
     //
     this.config = {web3url: "http://localhost:8545"};
@@ -32,7 +32,7 @@ var ConsentHandler = function (password, account) {
     //
     this.web3 = new Web3(new Web3.providers.HttpProvider(this.config.web3url));
 
-    //
+   //
     // Determine the account, use coinbase as default. Unlock it and use
     // it as default account.
     //
@@ -58,7 +58,7 @@ var ConsentHandler = function (password, account) {
     console.log ('Loading contract binaries and interface descriptions');
     var consentSRC;
     try {
-	consentSRC = fs.readFileSync('../sol/generated/consent.json');
+	consentSRC = fs.readFileSync('../../../sol/generated/consent.json');
     } catch (err) {
 	console.log ('Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
 	return;
