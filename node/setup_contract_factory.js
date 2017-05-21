@@ -8,7 +8,7 @@
 // Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
 //
 
-var ConsentFactory = require ('./consentfactory.js');
+var ConsentHandler = require ('./consent.js');
 
 //
 // Check arguments
@@ -22,10 +22,9 @@ if (process.argv.length < 3 || process.argv.length > 4) {
 // Create the new consent factory
 //
 if (process.argv.length == 3)
-    consent = new ConsentFactory (process.argv[2]);
+    consentHandler = new ConsentHandler (process.argv[2]);
 else
-    consent = new ConsentFactory (process.argv[2], process.argv[3]);
-
+    consentHandler = new ConsentHandler (process.argv[2], process.argv[3]);
 
 //
 // Define some functions to be used
@@ -35,7 +34,7 @@ function contractMined (error,result)
     if (!error) {
 	if (result.address!=undefined) {
             console.log("Your consent factory contract is mined and got address " + result.address);
-	    addSomeConsentTemplates(result.address);
+	    // addSomeConsentTemplates(result.address);
 	}
     }
 }
@@ -63,4 +62,6 @@ function addSomeConsentTemplates (factory)
 //
 //console.log ("Creating a new consent factory");
 //init.newConsentFactory (init.config.account, 2000000, contractMined);
+txhash = consentHandler.newConsentFactory (2000000, contractMined);
+console.log ("Transaction hash " + txhash);
 

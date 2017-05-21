@@ -9,9 +9,9 @@ var Web3 = require('web3');
 var fs = require('fs');
 
 //
-// The Consent Factory object
+// The Consent Handler object
 //
-var ConsentFactory = function (password, account) {
+var ConsentHandler = function (password, account) {
 
     //
     // Get hold of the configuration
@@ -51,9 +51,24 @@ var ConsentFactory = function (password, account) {
 	console.log(e);
 	return;
     }
-    
-}
 
+    //
+    // Create the contracts binary interface
+    //
+    console.log ('Loading contract binaries and interface descriptions');
+    var consentSRC;
+    try {
+	consentSRC = fs.readFileSync('../sol/generated/consent.json');
+    } catch (err) {
+	console.log ('Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
+	return;
+    }
+    this.consentContracts = JSON.parse(consentSRC)["contracts"];
+    this.consentContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:Consent"].abi));
+    this.consentBinary = "0x" + this.consentContracts["consent.sol:Consent"].bin;
+    this.consentFactoryContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentFactory"].abi));
+    this.consentFactoryBinary = "0x" + this.consentContracts["consent.sol:ConsentFactory"].bin;    
+}
 
 //
 // Various functions
@@ -62,7 +77,7 @@ var ConsentFactory = function (password, account) {
 //
 // Saves the configuration as a JSON structure to config.json
 //
-ConsentFactory.prototype.saveConfiguration = function ()
+ConsentHandler.prototype.saveConfiguration = function ()
 {
     try {
 	fs.writeFileSync('config.json', JSON.stringify(config));
@@ -73,10 +88,35 @@ ConsentFactory.prototype.saveConfiguration = function ()
 }
 
 //
+// Initiates a mining of a new factory, returns with the transaction identity
+//
+ConsentHandler.prototype.newConsentFactory = function(account, gas, mined)
+{
+    var param = {from: account, gas: gas, data: consentFactoryBinary};
+    return consentFactoryContract.new (param, mined);
+}
+
+//
+// Get a consent factory that is already in the blockchain
+//
+ConsentHandler.prototype.getConsentFactory = function (address)
+{
+    return new ConsentFactory (address);
+}
+
+//
+// The ConsentFactory class
+//
+var ConsentFactory = function (address)
+{
+    this.consentFactory = consentFactoryContract.at (address);
+}
+
+//
 // Set up the exporting
 //
 
-module.exports = ConsentFactory
+module.exports = ConsentHandler
 
 //
 // End of file
