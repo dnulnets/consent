@@ -15,6 +15,7 @@ node/node_modules/*
 node/node_modules
 node/.node*
 node/config.json
+node_modules
 
 # solc
 *.abi
