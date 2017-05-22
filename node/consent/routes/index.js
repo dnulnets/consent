@@ -13,19 +13,20 @@ router.get('/register', function(req, res) {
 });
 
 router.post('/register', function(req, res) {
-    Account.register(new Account({ username : req.body.username }), req.body.password, function(err, account) {
+    
+    var id = consentHandler.newAccount (req.body.password);
+    console.log ("Blockchain id for user " + req.body.username + " got account " + id);
+    Account.register(new Account({ username : req.body.username, coinbase : id }), req.body.password, function(err, account) {
+	
         if (err) {
             return res.render('register', { account : account });
         }
 
         passport.authenticate('local')(req, res, function () {
-	    console.log ("--------------------------------------------------");	    
-	    console.log ("User is registered!");
-	    console.log ("Request : " + util.inspect (req));
-	    console.log ("--------------------------------------------------");
-	    console.log ("Response : " + util.inspect (res));
-	    console.log ("--------------------------------------------------");
+
+	    // Start mining a consent list	    
             res.redirect('/');
+	    
         });
     });
 });

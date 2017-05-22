@@ -10,6 +10,9 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 
+var ConsentHandler = require ('./lib/consent.js');
+consentHandler = new ConsentHandler ("mandelmassa");
+
 // The indices
 var index = require('./routes/index');
 //var users = require('./routes/users');

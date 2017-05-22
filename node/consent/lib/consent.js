@@ -58,7 +58,7 @@ var ConsentHandler = function (password, account) {
     console.log ('Loading contract binaries and interface descriptions');
     var consentSRC;
     try {
-	consentSRC = fs.readFileSync('../../../sol/generated/consent.json');
+	consentSRC = fs.readFileSync('../../sol/generated/consent.json');
     } catch (err) {
 	console.log ('Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
 	return;
@@ -73,6 +73,13 @@ var ConsentHandler = function (password, account) {
 //
 // Various functions
 //
+
+ConsentHandler.prototype.newAccount = function (password)
+{
+    var account = this.web3.personal.newAccount (password);
+    console.log ("New account = " + account);
+    return account;
+}
 
 //
 // Saves the configuration as a JSON structure to config.json
