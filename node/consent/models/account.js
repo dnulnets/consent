@@ -6,7 +6,7 @@ var Account = new Schema({
     username: String,
     password: String,
     coinbase: String,
-    
+    consents: String
 });
 
 Account.plugin(passportMongoose);
