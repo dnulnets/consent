@@ -1,10 +1,14 @@
 extends layout
 
 block content
-  if (!user)
-    a(href="/login") Login
-    br
-    a(href="/register") Register
-  if (user)
-    p You are currently logged in as #{user.username}
-    a(href="/logout") Logout
+  .container
+    h1 Consent Handling Prototype
+    if (!user)
+      a(href="/login") Login
+      br
+      a(href="/register") Register
+    if (user)
+      p You are currently logged in as #{user.username}
+      p You have coinbase #{user.coinbase}
+      p You have consent file #{user.consents}
+      a(href="/logout") Logout

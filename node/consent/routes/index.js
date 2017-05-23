@@ -13,15 +13,18 @@ router.get('/register', function(req, res) {
 });
 
 router.post('/register', function(req, res) {
-    
+
+    // Create a blockchain account for this user. Is this how we really should do it???
     var id = consentHandler.newAccount (req.body.password);
     console.log ("Blockchain id for user " + req.body.username + " got account " + id);
     Account.register(new Account({ username : req.body.username, coinbase : id }), req.body.password, function(err, account) {
-	
+
+	// Was it succesfull?
         if (err) {
             return res.render('register', { account : account });
         }
 
+	// Authenticate us
         passport.authenticate('local')(req, res, function () {
 
 	    // Start mining a consent list
