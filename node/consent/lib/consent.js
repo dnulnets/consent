@@ -2,7 +2,7 @@
 // Sets up global default variables and functions needed for this prototype
 // and handles command line arguments.
 //
-// Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+// Copyright (c) 2017, Tomas Stenlund, All rights reserved
 //
 
 var Web3 = require('web3');

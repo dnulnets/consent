@@ -6,7 +6,7 @@ pragma solidity ^0.4.11;
  *
  * It basically provides a textual description  that is either accepted or denied by a user.
  *
- * Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+ * Copyright (c) 2017, Tomas Stenlund, All rights reserved
  *
  */
 contract Consent {
@@ -61,7 +61,7 @@ contract Consent {
  * This contains a list of consents that a specific user has been
  * offered. Regardless if it is deined, approved or has no decision.
  *
- * Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+ * Copyright (c) 2017, Tomas Stenlund, All rights reserved
  *
  */
 contract ConsentFile {
@@ -103,9 +103,10 @@ contract ConsentFile {
  * consents.
  *
  * It basically provides an interface to be able to create consents based on
- * a specific purpouse for a specific user. And always using the latest version.
+ * a specific purpouse for a specific user. And always using the latest version
+ * and always puts newly generated consents into a persons consent file.
  *
- * Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+ * Copyright (c) 2017, Tomas Stenlund, All rights reserved
  *
  */
 contract ConsentFactory {
@@ -247,3 +248,7 @@ contract ConsentFactory {
   /* Function to recover the funds on the contract */
   function kill() { if (msg.sender == owner) selfdestruct(owner); }
 }
+
+/*
+ * END
+ */

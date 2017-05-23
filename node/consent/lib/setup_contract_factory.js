@@ -5,7 +5,7 @@
 // It generates a consent factory contract and returns with the
 // contract address to be used for consent generation and handling.
 // 
-// Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+// Copyright (c) 2017, Tomas Stenlund, All rights reserved
 //
 
 var ConsentHandler = require ('./consent.js');

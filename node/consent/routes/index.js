@@ -24,7 +24,11 @@ router.post('/register', function(req, res) {
 
         passport.authenticate('local')(req, res, function () {
 
-	    // Start mining a consent list	    
+	    // Start mining a consent list
+	    console.log ("Mining for a consent file for user " + req.body.username + ", blockchain id " + id);
+	    consentHandler.createConsentFile (id);
+	    
+	    // Redirect us to the logged in page
             res.redirect('/');
 	    
         });
