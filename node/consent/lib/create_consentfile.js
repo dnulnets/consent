@@ -12,18 +12,18 @@ var ConsentHandler = require ('./consent.js');
 //
 // Check arguments
 //
-if (process.argv.length < 3 || process.argv.length > 4) {
-    console.log('node ' + process.arg[1]+' <password to unlock account> [account]');
+if (process.argv.length < 4 || process.argv.length > 5) {
+    console.log('node ' + process.arg[1]+' <user> <password to unlock account> [account]');
     return;
 }
 
 //
 // Create the new consent factory
 //
-if (process.argv.length == 3)
-    consentHandler = new ConsentHandler (process.argv[2]);
+if (process.argv.length == 4)
+    consentHandler = new ConsentHandler (process.argv[3]);
 else
-    consentHandler = new ConsentHandler (process.argv[2], process.argv[3]);
+    consentHandler = new ConsentHandler (process.argv[3], process.argv[4]);
 
 //
 // Catch the consent file creation event
@@ -38,5 +38,6 @@ var event = consentHandler.allEventsHandler (function (err,res) {
 //
 // Create a file
 //
-var txhash = consentHandler.createConsentFile ("0x9e4e1dc444e85336e04b6da52d9e35783682fab7");
-console.log("Your consent file contract creation is being deployed in transaction " + txhash);
+var txhash = consentHandler.createConsentFile (process.argv[2]);
+console.log("Your consent file contract creation for user " + process.argv[2] + " is being deployed");
+
