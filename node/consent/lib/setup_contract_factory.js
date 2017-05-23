@@ -34,34 +34,35 @@ function contractMined (error,result)
     if (!error) {
 	if (result.address!=undefined) {
             console.log("Your consent factory contract is mined and got address " + result.address);
-	    // addSomeConsentTemplates(result.address);
+	    addSomeConsentTemplates(result.address);
 	}
+    } else {
+	console.log (error);
     }
 }
 
 function newTemplatesMined (error,result)
 {
     if (!error) {
-	console.log ("Your new consent templates got sent as a transaction");
-	console.log (result);
+	console.log ("Transaction = " + result);
     } else {
-	console.log ("Your new consent templates was not able to be sent");
+	console.log ("Transaction failed");
 	console.log (err);
     }
 }
 
 function addSomeConsentTemplates (factory)
 {
-    consentFactory = init.getConsentFactory (factory);
-    console.log ("Adding some consent templates");
-    consentFactory.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis...", "sv-SE", newTemplatesMined);
-    consentFactory.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis...", "SE", newTemplatesMined);
+    consentHandler.setConsentFactoryAddress (factory);
+    consentHandler.config.consentFactory = factory;
+    consentHandler.saveConfiguration();
+    console.log("The configuration file config.json has been updated with the new factory address");
+    console.log ("Adding some consent templates for testing purpouses");
+    consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE", newTemplatesMined);
+    consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE", newTemplatesMined);
 }
 
 // Create the factory for the consents
 //
-//console.log ("Creating a new consent factory");
-//init.newConsentFactory (init.config.account, 2000000, contractMined);
-txhash = consentHandler.newConsentFactory (2000000, contractMined);
-console.log ("Transaction hash " + txhash);
-
+console.log ("Creating a new consent factory");
+consentHandler.newConsentFactory (contractMined);

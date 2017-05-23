@@ -13,13 +13,13 @@ var fs = require('fs');
 //
 var ConsentHandler = function (password, account) {
 
-        //
+    //
     // Get hold of the configuration
     //
-    this.config = {web3url: "http://localhost:8545"};
     try {
-	config = JSON.parse(fs.readFileSync('config.json'));
+	this.config = JSON.parse(fs.readFileSync('config.json'));
     } catch (err) {
+	this.config = {web3url: "http://localhost:8545"};
 	if (err.code != 'ENOENT') {
 	    console.log ("Unable to open configuration file, regressing to default");
 	} else {
@@ -64,16 +64,36 @@ var ConsentHandler = function (password, account) {
 	return;
     }
     this.consentContracts = JSON.parse(consentSRC)["contracts"];
+    
     this.consentContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:Consent"].abi));
     this.consentBinary = "0x" + this.consentContracts["consent.sol:Consent"].bin;
+    
     this.consentFactoryContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentFactory"].abi));
     this.consentFactoryBinary = "0x" + this.consentContracts["consent.sol:ConsentFactory"].bin;    
+
+    this.consentFileContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentFile"].abi));
+    this.consentFileBinary = "0x" + this.consentContracts["consent.sol:ConsentFile"].bin;
+
+    //
+    // Get holds of the consent factory if we have one configured, otherwise faile
+    //
+    if (typeof this.config.consentFactory !== 'undefined') {
+	console.log ("Using configured consent factory at " + this.config.consentFactory);
+	this.consentFactory = this.consentFactoryContract.at (this.config.consentFactory);
+    } else {
+	console.log ("No consent factory configured, run the setup script to generate a factory.");
+	throw ""; 
+    }
+
 }
 
 //
 // Various functions
 //
 
+//
+// Creates a new account and creates a new 
+//
 ConsentHandler.prototype.newAccount = function (password)
 {
     var account = this.web3.personal.newAccount (password);
@@ -87,7 +107,7 @@ ConsentHandler.prototype.newAccount = function (password)
 ConsentHandler.prototype.saveConfiguration = function ()
 {
     try {
-	fs.writeFileSync('config.json', JSON.stringify(config));
+	fs.writeFileSync('config.json', JSON.stringify(this.config));
     } catch (err) {
 	console.log ("Unable to save configuration file " + err.code);
 	return;
@@ -97,34 +117,43 @@ ConsentHandler.prototype.saveConfiguration = function ()
 //
 // Initiates a mining of a new factory, returns with the transaction identity
 //
-ConsentHandler.prototype.newConsentFactory = function(gas, mined)
+ConsentHandler.prototype.newConsentFactory = function(mined)
 {
-    var param = {from: this.account, gas: gas, data: this.consentFactoryBinary};
+    var param = {from: this.account, gas: 4000000, data: this.consentFactoryBinary};
     return this.consentFactoryContract.new (param, mined);
 }
 
 //
-// Get a consent factory that is already in the blockchain
+// Sets the factory after construction
 //
-ConsentHandler.prototype.getConsentFactory = function (address)
+ConsentHandler.prototype.setConsentFactoryAddress = function (address)
 {
-    return (new ConsentFactory (address));
-}
-
-//
-// The ConsentFactory class
-//
-var ConsentFactory = function (address)
-{
-    this.consentFactory = consentFactoryContract.at (address);
+    this.consentFactory = this.consentFactoryContract.at (address);
 }
 
 //
 // Add new templates to the factory
 //
-ConsentFactory.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry, mined)
+ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry, mined)
 {
     return this.consentFactory.addConsentTemplate (purpouse, version, title, text, languageCountry, mined);
+}
+
+//
+// Add an event listener to the consent factory
+//
+ConsentHandler.prototype.allEventsHandler = function (mined)
+
+{
+    this.consentFactory.allEvents (mined);
+}
+
+//
+// Create a new consent file
+//
+ConsentHandler.prototype.createConsentFile = function (_user)
+{
+    return this.consentFactory.createConsentFile.sendTransaction (_user, {from: this.account, gas:4000000});
 }
 
 //

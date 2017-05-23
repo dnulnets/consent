@@ -11,10 +11,8 @@ tramp
 #consent
 sol/generated/*
 sol/generated
-node/node_modules/*
-node/node_modules
-node/.node*
-node/config.json
+.node*
+node/consent/config.json
 node_modules
 
 # solc

@@ -55,6 +55,49 @@ contract Consent {
     function kill() { if (msg.sender == owner) selfdestruct(owner); }
 }
 
+/*
+ * This a list of consents that are offered to a specific account.
+ *
+ * This contains a list of consents that a specific user has been
+ * offered. Regardless if it is deined, approved or has no decision.
+ *
+ * Copyright (c) 2017, Tomas Stenlund, Permobil AB, All rights reserved
+ *
+ */
+contract ConsentFile {
+
+  /* The owner of the file */
+  address private owner;
+
+  /* The list of all consents */
+  address[] private listOfConsents;
+
+  /* The constructor of the file. Also attaches it to an owner */
+  function ConsentFile (address _owner)
+  {
+    owner = _owner;
+  }
+
+  /* Adds a new consent to the file */
+  function addConsent (address _consent)
+  {
+    listOfConsents.push (_consent);
+  }
+
+  /* Retrieve a list of all consents in the file */
+  function getListOfConsents () constant returns (address[])
+  {
+    return listOfConsents;
+  }
+
+  /* Retrieves the owner */
+  function getOwner () constant returns (address)
+  {
+    return owner;
+  }
+  
+}
+
 /* 
  * This is the consent factory contract that handles consents and version of
  * consents.
@@ -97,7 +140,8 @@ contract ConsentFactory {
   mapping (string => ConsentLanguageCountry) consentPurpouses;
   
   /* Events generated when the consent has been created */
-  event ConsentFactoryCreatedEvent(address indexed user, address consent);
+  event ConsentFactoryConsentCreatedEvent(address indexed user, address consent);
+  event ConsentFactoryFileCreatedEvent(address indexed user, address file);
   event ConsentFactoryFailedEvent(address indexed user, Error error);
   
   /* Constructor for the consent factory */
@@ -127,22 +171,39 @@ contract ConsentFactory {
   {
     delete consentPurpouses[_purpouse].consentTemplates[_languageCountry];
   }
-    
+
+  /* Create a file that holds a users all consents
+   * 
+   * This is the file that holds all consents regardless of their state.
+   */
+  function createConsentFile (address _user)
+  {
+    address file;
+
+    file = new ConsentFile (_user);
+    ConsentFactoryFileCreatedEvent(_user, file);
+  }
+  
   /* Create a consent for a specific purpouse of the latest version, language and country.
    *
    * Country and Purpouse must exist otherwise it will fail, if language is not there it will
-   * default to countrys default language if it exists otherwise it will fail. */
-  function createConsent (address _user, string _purpouse, string _languageCountry)
+   * default to countrys default language if it exists otherwise it will fail. It adds
+   * the consent to the users file as well.
+   */
+  function createConsent (address _file, string _purpouse, string _languageCountry)
   {
     address consent;
+    ConsentFile cf = ConsentFile (_file);
+    
     ConsentTemplate memory ct = getTemplate (_purpouse, _languageCountry);
 
     /* Did we get the template ?*/
     if (ct.version > 0) {
-      consent = new Consent (_user, _purpouse, ct.version, ct.title, ct.text, _languageCountry);
-      ConsentFactoryCreatedEvent(_user, consent);
+      consent = new Consent (cf.getOwner(), _purpouse, ct.version, ct.title, ct.text, _languageCountry);
+      ConsentFile(_file).addConsent (consent);
+      ConsentFactoryConsentCreatedEvent(cf.getOwner(), consent);
     } else {
-      ConsentFactoryFailedEvent(_user, Error.no_such_template);
+      ConsentFactoryFailedEvent(cf.getOwner(), Error.no_such_template);
     }
   }
 
