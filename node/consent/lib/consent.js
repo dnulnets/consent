@@ -82,7 +82,6 @@ var ConsentHandler = function (password, account) {
 	this.consentFactory = this.consentFactoryContract.at (this.config.consentFactory);
     } else {
 	console.log ("No consent factory configured, run the setup script to generate a factory.");
-	throw ""; 
     }
 
 }
