@@ -12,13 +12,13 @@ A set of contracts written in Solidity that gives a web application the possibli
 
 The blockchain has three contracts.
 
-- ConsentFactory - A contract that is created for a company that allows the company to manage consent templates, generate new consents and add them to a users consent file. The templates supports versions, language and jurisdiction (country).
+- ConsentFactory - A contract that is created for a company that allows the company to manage consent templates, generate new consents and add them to a users consent file. The templates supports versions, language, purpouse and jurisdiction (country).
 
 - ConsentFile - A file that contains all the consents that have been offered to a specific user by the companies.
 
 - Consent - A contract that allows a company to get consents from a specific user and for a specific purpouse. The user can agree, disagree or defer the decision on wether or not to accept it.
 
-An simple express web server with a couple of pages to create new users and allow them to manage their consents.
+An simple express web server with a couple of pages to create new users and allow them to manage their consents during logins.
 
 A couple of node javascripts to setup the ethereum blockchain, initiate a ConsentFactory and try out various use cases on the contracts.
 
