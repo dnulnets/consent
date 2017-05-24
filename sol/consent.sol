@@ -12,47 +12,62 @@ pragma solidity ^0.4.11;
 contract Consent {
 
     /* Enumeration for the state of the consent */
-    enum Status {denied, accepted, offered}
+  enum Status {denied,    /* The giver has denied the consent */
+	       accepted,  /* The giver has accepted the consent */ 
+	       requested, /* The company has requested a consent, user has not yet responded */
+	       cancelled  /* The company has cancelled the consent because he no longer needs it */
+  }
     
-    /* Define variable owner of the type address*/
-    address owner;  /* Who wants to get the consent, address to the account. Should be an identity contract */
-    address giver;  /* Who gives the consent, address to the account. Should be an identity contract */
-    Status  private status; /* The status of the consent */
-    string  purpouse;     /* What purpouse the consent is for */ 
-    uint16  version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
-    string  title;        /* The title of the consent */
-    string  text;         /* The text that describes the purpouse of the consent */
-    string  languageCountry;       /* Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
-				    * separated by a dash, so for swedish in Sweden it is sv-SE */
+  /* Define variable owner of the type address*/
+  address private owner;  /* Who wants to get the consent, address to the account. Should be an identity contract */
+  address private giver;  /* Who gives the consent, address to the account. Should be an identity contract */
+  Status  private status; /* The status of the consent */
+  string  private purpouse;     /* What purpouse the consent is for */ 
+  uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
+  string  private title;        /* The title of the consent */
+  string  private text;         /* The text that describes the purpouse of the consent */
+  string  private languageCountry;       /* Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
+					  * separated by a dash, so for swedish in Sweden it is sv-SE */
 
-    /* This function is executed at initialization and sets the owner and the giver of the consent */
-    /* as well as what it contains */
-    function Consent(address _giver, string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
-    {
-        purpouse = _purpouse;
-        version = _version;
-        title = _title;
-        text = _text;
-        giver = _giver;
-	status = Status.offered;
-	languageCountry = _languageCountry;
-        owner = msg.sender;
-    }
+  /* Event to signal that the status has changed */
+  event ConsentStatusChanged (address indexed owner, address indexed giver, address consent, Status status);
+  
+  /* This function is executed at initialization and sets the owner and the giver of the consent */
+  /* as well as what it contains */
+  function Consent(address _giver, string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
+  {
+    purpouse = _purpouse;
+    version = _version;
+    title = _title;
+    text = _text;
+    giver = _giver;
+    status = Status.requested;
+    languageCountry = _languageCountry;
+    owner = msg.sender;
+  }
 
-    /* Sets the status of the consent, this can only be done by the giver */
-    function setStatus(Status _status)
-    {
-        status = _status;
-    }
+  /* Sets the status of the consent, this can only be done by the giver */
+  function setStatus(Status _status)
+  {
+    status = _status;
+    ConsentStatusChanged (owner, giver, this, _status);    
+  }
 
-    /* Returns the status of the consent */    
-    function getStatus() returns (Status)
-    {
-        return status;
-    }
-    
-    /* Function to recover the funds on the contract */
-    function kill() { if (msg.sender == owner) selfdestruct(owner); }
+  /* Cancels a consent, this can only be done by the company who created the consent */
+  function cancelConsent ()
+  {
+    status = Status.cancelled;
+    ConsentStatusChanged (owner, giver, this, Status.cancelled);    
+  }
+  
+  /* Returns the status of the consent */    
+  function getStatus() returns (Status)
+  {
+    return status;
+  }
+  
+  /* Function to recover the funds on the contract */
+  function kill() { if (msg.sender == owner) selfdestruct(owner); }
 }
 
 /*
@@ -72,6 +87,9 @@ contract ConsentFile {
   /* The list of all consents */
   address[] private listOfConsents;
 
+  /* Events that are sent when things happen */
+  event ConsentFileConsentAdded (address indexed user, address consent);
+  
   /* The constructor of the file. Also attaches it to an owner */
   function ConsentFile (address _owner)
   {
@@ -82,6 +100,7 @@ contract ConsentFile {
   function addConsent (address _consent)
   {
     listOfConsents.push (_consent);
+    ConsentFileConsentAdded (owner,  _consent);
   }
 
   /* Retrieve a list of all consents in the file */
@@ -116,7 +135,7 @@ contract ConsentFactory {
   }
   
   /* The owner of this contract */
-  address owner;  /* Who owns this contract */
+  address private owner;  /* Who owns this Consent Facotory, this is a company */
 
   /* 
    * This structure is the template for the consent, it contains version, title and the
@@ -138,12 +157,13 @@ contract ConsentFactory {
   }
   
   /* Contains a map from purpouse to language and country mapping */
-  mapping (string => ConsentLanguageCountry) consentPurpouses;
+  mapping (string => ConsentLanguageCountry) private consentPurpouses;
   
   /* Events generated when the consent has been created */
-  event ConsentFactoryConsentCreatedEvent(address indexed user, address consent);
-  event ConsentFactoryFileCreatedEvent(address indexed user, address file);
-  event ConsentFactoryFailedEvent(address indexed user, Error error);
+  event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address consent);
+  event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
+  event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
+  event ConsentFactoryTemplateAdded (address indexed owner, address factory, string purpouse);
   
   /* Constructor for the consent factory */
   function ConsentFactory() public
@@ -156,21 +176,7 @@ contract ConsentFactory {
   {
     consentPurpouses[_purpouse].exist = true;
     consentPurpouses[_purpouse].consentTemplates[_languageCountry] = ConsentTemplate ({version: _version, title: _title, text: _text});
-  }
-
-  /* Remove an entire purpouse */
-  /* NOTE TO SELF: delete really does not delete any of the mappings, do better later on */
-  function removePurpouse (string _purpouse)
-  {
-    delete consentPurpouses[_purpouse];
-    consentPurpouses[_purpouse].exist = false;
-  }
-
-  /* Remove a specific country and language combination of a purpouse */
-  /* NOTE TO SELF: delete really does not delete any of the mappings, do better later on */
-  function removeConsentTemplate (string _purpouse, string _languageCountry)
-  {
-    delete consentPurpouses[_purpouse].consentTemplates[_languageCountry];
+    ConsentFactoryTemplateAdded (owner, this, _purpouse);    
   }
 
   /* Create a file that holds a users all consents
@@ -182,7 +188,7 @@ contract ConsentFactory {
     address file;
 
     file = new ConsentFile (_user);
-    ConsentFactoryFileCreatedEvent(_user, file);
+    ConsentFactoryFileCreatedEvent(owner, _user, file);
   }
   
   /* Create a consent for a specific purpouse of the latest version, language and country.
@@ -202,9 +208,9 @@ contract ConsentFactory {
     if (ct.version > 0) {
       consent = new Consent (cf.getOwner(), _purpouse, ct.version, ct.title, ct.text, _languageCountry);
       ConsentFile(_file).addConsent (consent);
-      ConsentFactoryConsentCreatedEvent(cf.getOwner(), consent);
+      ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), consent);
     } else {
-      ConsentFactoryFailedEvent(cf.getOwner(), Error.no_such_template);
+      ConsentFactoryFailedEvent(owner, cf.getOwner(), Error.no_such_template);
     }
   }
 
