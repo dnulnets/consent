@@ -1,11 +1,9 @@
 # Consent Handling Prototype
 A prototype for consent handling using a ethereum blockchain based on PoA and a small web server (express on node) to demonstrate the functionality.
 ## What is a consent?
-When one person voluntarily agrees to the proposal or desires of another.
+**When one person voluntarily agrees to the proposal or desires of another.**
 
-This is very common when a company want to perform specific processing of information collected from a person. For instance if a company collects data on a persons usage of a specific product with the intention of performing product improvements based on that data, the company needs to have a consent.
-
-One solution to this is to provide contracts on a blockchain for this specific purpouse. That is what this prototype demonstrates.
+This is a common use case when a company wants to perform processing of information collected from a person for a specific purpouse. For example: If a company collects data on a persons usage of a product with the intention of using that data to perform product improvements based on that data, the company needs to have a consent.
 
 ## User stories
 

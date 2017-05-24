@@ -1,9 +1,15 @@
 extends layout
+include mixins
 
 block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+    if (!user)
+      +nav_item( "login" ) Login
+      +nav_item( "register" ) Register
+    if (user)
+      +nav_item( "logout" ) Logout
   .container
-    h1 Login Page
-    p.lead You will get access to you consent file and manage all of your consents.
+    p.lead Once you have logged in you will get access to your consent file on the blockchain and manage all of your consents.
     br
     form(role='form', action="/login",method="post", style='max-width: 300px;')
       .form-group

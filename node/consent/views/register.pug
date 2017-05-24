@@ -1,9 +1,15 @@
 extends layout
+include mixins
 
 block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+    if (!user)
+      +nav_item( "login" ) Login
+      +nav_item( "register" ) Register
+    if (user)
+      +nav_item( "logout" ) Logout
   .container
-    h1 Register Page
-    p.lead This page lets you register a username and password. You will then get a consent file to hold all of your consents.
+    p.lead Once you have registered a username you will get a blockchain account and a personal consent file that allows you to manage all of your consents.
     br
     form(role='form', action="/register",method="post", style='max-width: 300px;')
       .form-group
