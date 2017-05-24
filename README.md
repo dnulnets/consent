@@ -1,5 +1,5 @@
 # Consent Handling Prototype
-A prototype for consent handling using a ethereum blockchain based on PoA and a small web server (express on node) to demonstrate the functionality.
+A prototype for consent handling using a ethereum blockchain based on PoA, a web server (express on node) and a mongo database to demonstrate the functionality.
 ## What is a consent?
 **When one person voluntarily agrees to the proposal or desires of another.**
 
@@ -8,10 +8,11 @@ This is a common use case when a company wants to perform processing of informat
 ## User stories
 
 From a company perspective:
-- As a company I would like to be able to have a set of consent templates ready to generate new consents to offer our end users.
-- As a company I need the consent template to specify a title, a body describing the purpouse of the consent and a purpouse for the consent.
-- As a company I would like to generate a consent for a specific user based on a consent template that has a specific purpouse, language and country.
-- As a company I would like to check to see if a user has accepted a specific consent.
+- As a company I would like to be able to have a set of consent templates that I can generate new consent forms from to offer our end users.
+- As a company I expect the consent template to specify a title, a body describing the purpouse of the consent.
+- As a company I would like to generate a new consent form for a specific user from a consent template based on my purpouse.
+- As a company I expect the system to choose the consent template when generating the consent form based on my purpouse, the users language and country.
+- As a company I would like to determine if a user has accepted a consent.
 - As a company I need to be able to provide a detailed audit trail of the consent handling for a specific user.
 - As a company I expect the system to automatically generate new consents for the users if a consent template with the same purpouse as the initial consent is updated.
 - As a company I need to be able to offer of withdraw a consent at any time.
@@ -19,6 +20,7 @@ From a company perspective:
 From a user perspective:
 - As a user I would like to know which consents I have been offered, are withdrawn, accepted, denied or defered.
 - As a user I would like to be able to deny or accept a consent at any time.
+- As a user I expect that if a consent gets updated the system adds that consent to my consent file as a new offer.
 
 ## What does this prototype contains
 
@@ -30,11 +32,11 @@ The blockchain has three contracts.
 
 - ConsentFile - A file that contains all the consents that have been offered to a specific user by the companies.
 
-- Consent - A contract that allows a company to get consents from a specific user and for a specific purpouse. The user can agree, disagree or defer the decision on wether or not to accept it.
+- Consent - A contract that allows a company to get consents from a specific user and for a specific purpouse. The user can agree, disagree or defer the decision on wether or not to accept it. A company can withdraw a consent.
 
-An simple express web server with a couple of pages to create new users and allow them to manage their consents during logins.
+An express web server with a couple of pages to create new users and allow them to manage their consents during logins.
 
-A couple of node javascripts to setup the ethereum blockchain, initiate a ConsentFactory and try out various use cases on the contracts.
+A couple of node javascripts to setup the ethereum blockchain and initiate a ConsentFactory on the blockchain that is used by the express web server.
 
 ## What needs to be done
 
@@ -43,6 +45,8 @@ This is just a few items that needs to be sorted out:
 - How to handle integrity, i.e. wether or not a person has agreed or not is considered personal data. Maybe even the consent in itself.
 - Is PoA the way to go, and if so who is the Authority in this case?
 - Identity and proof of identity of the person is needed in the end.
-- Signature, how to handle that on the consent or is it enough as it is? 2FA, etc.
-- The contract model is that really the way to go? Need disucssions.
+- Signature, how to handle that on the consents or is it enough as it is?
+- Better authentication, 2FA.
+- The contract model is that really the way to go? What to put in the blockchain and what to put in the mongo database. Need disucssions?
+
 
