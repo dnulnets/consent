@@ -1,7 +1,9 @@
 # Consent Handling Prototype
 An investigative  prototype for consent handling using an ethereum blockchain based on PoA, a web server (express on node) and a mongo database.
 
-It is in no way complete or claim to be completed and is focusing on the process of handling consents on a blockchain.
+It is in no way complete or claim to ever be completed and is focusing on the process of handling consents on a blockchain.
+
+**This is work in progress.**
 ## What is a consent?
 **When one person voluntarily agrees to the proposal or desires of another.**
 
