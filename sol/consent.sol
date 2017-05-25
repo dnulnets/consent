@@ -1,6 +1,64 @@
 pragma solidity ^0.4.11;
 
 /*
+ * This file contains a set of contracts used to handle consents between a company
+ * and a person.
+ *
+ * Copyright (c) 2017, Tomas Stenlund, All rights reserved
+ */
+
+/*
+ * This is the contract that handles consent templates for a specific purpouse. It is used
+ * when a person or entity wants to get a consent from another user. The consent is then
+ * generated from this template.
+ *
+ * It basically provides a textual description of the consent.
+ *
+ * Copyright (c) 2017, Tomas Stenlund, All rights reserved
+ *
+ */
+contract ConsentTemplate {
+
+  address private owner;        /* The owner of the template */
+  string  private purpouse;     /* What purpouse the template is for */ 
+  uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
+  string  private title;        /* The title of the consent */
+  string  private text;         /* The text that describes the purpouse of the consent */
+  string  private languageCountry;       /* The language and country the consent template is valid for
+					  *
+					  * Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
+					  * separated by a dash, so for swedish in Sweden it is sv-SE */
+
+  /* Creates the contract and set the values of the contract. */
+  function ConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
+  {
+    owner = msg.sender;
+    purpouse = _purpouse;
+    version = _version;
+    title = _title;
+    text = _text;
+    languageCountry = _languageCountry;
+  }
+
+  /* Getters for the contract */
+  function getVersion () constant returns (uint16)
+  {
+    return version;
+  }
+
+  function getTitle () constant returns (string)
+  {
+    return title;
+  }
+
+  function getText () constant returns (string)
+  {
+    return text;
+  }
+
+}
+
+/*
  * This is the contract that handles consents for a specific purpouse given by a
  * user (giver) to another user (owner).
  *
@@ -18,42 +76,32 @@ contract Consent {
 	       cancelled  /* The company has cancelled the consent because he no longer needs it */
   }
     
-  /* Define variable owner of the type address*/
-  address private owner;  /* Who wants to get the consent, address to the account. Should be an identity contract */
-  address private giver;  /* Who gives the consent, address to the account. Should be an identity contract */
+  /* State variables for the contract */
+  address private owner;  /* Who issues to consent form */
+  address private giver;  /* Who gives the consent, address to the account. */
   Status  private status; /* The status of the consent */
-  string  private purpouse;     /* What purpouse the consent is for */ 
-  uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
-  string  private title;        /* The title of the consent */
-  string  private text;         /* The text that describes the purpouse of the consent */
-  string  private languageCountry;       /* Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
-					  * separated by a dash, so for swedish in Sweden it is sv-SE */
-
+  address private consentTemplate; /* The template this consent is based on */
+  
   /* Event to signal that the status has changed */
   event ConsentStatusChanged (address indexed owner, address indexed giver, address consent, Status status);
   
   /* This function is executed at initialization and sets the owner and the giver of the consent */
   /* as well as what it contains */
-  function Consent(address _giver, string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
+  function Consent(address _giver, address _consentTemplate) public
   {
-    purpouse = _purpouse;
-    version = _version;
-    title = _title;
-    text = _text;
     giver = _giver;
-    status = Status.requested;
-    languageCountry = _languageCountry;
     owner = msg.sender;
+    consentTemplate = _consentTemplate;
   }
 
-  /* Sets the status of the consent, this can only be done by the giver */
+  /* Sets the status of the consent, this can only be done by the giver. Should have a modifier for that. */
   function setStatus(Status _status)
   {
     status = _status;
     ConsentStatusChanged (owner, giver, this, _status);    
   }
 
-  /* Cancels a consent, this can only be done by the company who created the consent */
+  /* Cancels a consent, this can only be done by the company who created the consent. Should have a modifier for that. */
   function cancelConsent ()
   {
     status = Status.cancelled;
@@ -61,9 +109,14 @@ contract Consent {
   }
   
   /* Returns the status of the consent */    
-  function getStatus() returns (Status)
+  function getStatus() constant returns (Status)
   {
     return status;
+  }
+
+  /* Returns the consent template that this consent is based on */
+  function getTemplate() constant returns (ConsentTemplate)
+  {
   }
   
   /* Function to recover the funds on the contract */
@@ -137,18 +190,6 @@ contract ConsentFactory {
   /* The owner of this contract */
   address private owner;  /* Who owns this Consent Facotory, this is a company */
 
-  /* 
-   * This structure is the template for the consent, it contains version, title and the
-   * text of the consent. It is then contained in a mapping for purpose, country and
-   * language.
-   */
-  struct ConsentTemplate {
-    uint16 version;      /* Current version of the consent, if zero, no consent exists */
-    string title;        /* The title of the consent, i.e. "Analysis for Product development" */
-    string text;         /* The text body of the consent describing the reason, what we want to do and what kind of data
-			  * we want to use. */
-  }
-
   /* Contains a map from language and country according to ISO 639 and ISO 3166-1 alpha 2 separated by a dash to
    * consent template. For example swedish in Sweden is written sv-SE */
   struct ConsentLanguageCountry {
@@ -163,7 +204,7 @@ contract ConsentFactory {
   event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address indexed file, address consent);
   event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
   event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
-  event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, string purpouse, string languageCountry);
+  event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, address template);
 
   /* Debugging stuff */
   event ConsentFactoryDebug (string text, uint16 value, bool flag);
@@ -178,8 +219,9 @@ contract ConsentFactory {
   function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry)    
   {
     consentPurpouses[_purpouse].exist = true;
-    consentPurpouses[_purpouse].consentTemplates[_languageCountry] = ConsentTemplate ({version: _version, title: _title, text: _text});
-    ConsentFactoryTemplateAdded (owner, this, _purpouse, _languageCountry);    
+    ConsentTemplate consentTemplate = new ConsentTemplate (_purpouse, _version, _title, _text, _languageCountry);
+    consentPurpouses[_purpouse].consentTemplates[_languageCountry] = consentTemplate;
+    ConsentFactoryTemplateAdded (owner, this, consentTemplate);    
   }
   
   /* Create a file that holds a users all consents
@@ -202,45 +244,43 @@ contract ConsentFactory {
    */
   function createConsent (address _file, string _purpouse, string _languageCountry)
   {
-    address consent;
     ConsentFile cf = ConsentFile (_file);
-    
-    ConsentTemplate memory ct = getTemplate (_purpouse, _languageCountry);
-
-    /* Did we get the template ?*/
-    if (ct.version > 0) {
-      consent = new Consent (cf.getOwner(), _purpouse, ct.version, ct.title, ct.text, _languageCountry);
+    ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);
+    if (ct != address(0)) {
+      
+      Consent consent = new Consent (cf.getOwner(), ct);
       ConsentFile(_file).addConsent (consent);
       ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), _file, consent);
+
     } else {
+      
       ConsentFactoryFailedEvent(owner, cf.getOwner(), Error.no_such_template);
+      
     }
   }
 
   /* This function checks to see that there is a consent to be generated */
   function hasConsent (string _purpouse, string _languageCountry) constant returns (bool)
   {
-    return (getTemplate (_purpouse, _languageCountry).version != 0);
+    ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);
+    return (ct != address(0));
   }
   
   /* This function tests wether a consent for a specific purpouse exists or not */
   function getTemplate (string _purpouse, string _languageCountry) constant internal returns (ConsentTemplate)
   {
-    ConsentTemplate memory ct = ConsentTemplate({version:0, title: "", text: ""});
-    
     /* Get the consents for a specific purpouse */
-    ConsentLanguageCountry clc = consentPurpouses[_purpouse];    
+    ConsentLanguageCountry clc = consentPurpouses[_purpouse];
     if (clc.exist) {
 
       /* Get the specific consent for the language and country */
-      ct = clc.consentTemplates[_languageCountry];      
-      if (ct.version==0) {
-
+      ConsentTemplate ct = clc.consentTemplates[_languageCountry];
+      if (ct == address(0)) {
+	
 	/* Fallback here is to only go for the default language of the country */
 	/* So we need to strip the language from the country */
 	bytes memory b = bytes (_languageCountry);
 	if (b.length==5) {
-	  ConsentFactoryDebug("Value of b[2]", uint16(b[2]), false);	  
 	  if (b[2] == 45) {
 	    bytes memory c = new bytes(2);
 	    c[0] = b[3];
@@ -250,8 +290,8 @@ contract ConsentFactory {
 	}
       }
     }
-
-    /* No template found */
+    
+    /* Return with the found template */
     return ct;
   }
   

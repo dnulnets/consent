@@ -1,6 +1,6 @@
 //
-// Sets up global default variables and functions needed for this prototype
-// and handles command line arguments.
+// Sets up global default variables and functions needed for this
+// consent handling prototype on node.js
 //
 // Copyright (c) 2017, Tomas Stenlund, All rights reserved
 //
@@ -32,7 +32,7 @@ var ConsentHandler = function (password, account) {
     //
     this.web3 = new Web3(new Web3.providers.HttpProvider(this.config.web3url));
 
-   //
+    //
     // Determine the account, use coinbase as default. Unlock it and use
     // it as default account.
     //
@@ -65,6 +65,9 @@ var ConsentHandler = function (password, account) {
     }
     this.consentContracts = JSON.parse(consentSRC)["contracts"];
     
+    this.consentTemplateContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentTemplate"].abi));
+    this.consentTemplateBinary = "0x" + this.consentContracts["consent.sol:ConsentTemplate"].bin;
+    
     this.consentContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:Consent"].abi));
     this.consentBinary = "0x" + this.consentContracts["consent.sol:Consent"].bin;
     
@@ -75,7 +78,8 @@ var ConsentHandler = function (password, account) {
     this.consentFileBinary = "0x" + this.consentContracts["consent.sol:ConsentFile"].bin;
 
     //
-    // Get holds of the consent factory if we have one configured, otherwise faile
+    // Get holds of the consent factory if we have one configured, otherwise log it
+    // and ask the user to runt the setup script.
     //
     if (typeof this.config.consentFactory !== 'undefined') {
 	console.log ("Using configured consent factory at " + this.config.consentFactory);
@@ -91,7 +95,7 @@ var ConsentHandler = function (password, account) {
 //
 
 //
-// Creates a new account and creates a new 
+// Creates a new account, use the supplied password as the secret
 //
 ConsentHandler.prototype.newAccount = function (password)
 {
@@ -114,7 +118,10 @@ ConsentHandler.prototype.saveConfiguration = function ()
 }
 
 //
-// Initiates a mining of a new factory, returns with the transaction identity
+// Initiates a mining of a new consent factory, returns with the transaction
+// identity. This will also generate an event when the mining is finished.
+//
+// See consent.sol for details.
 //
 ConsentHandler.prototype.newConsentFactory = function(mined)
 {
@@ -131,23 +138,36 @@ ConsentHandler.prototype.setConsentFactoryAddress = function (address)
 }
 
 //
-// Add new templates to the factory
+// Add new templates to the factory. It will return with the transaction
+// hash and the ConsentFactory contract  will later fire an event when the
+// mining is finished.
+//
+// See consent.sol for details.
 //
 ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry)
 {
-    return this.consentFactory.addConsentTemplate.sendTransaction (purpouse, version, title, text, languageCountry, {from: this.account, gas: 4000000});
+    return this.consentFactory.addConsentTemplate.sendTransaction (purpouse, version, title,
+								   text, languageCountry,
+								   {from: this.account, gas: 4000000});
 }
 
 //
-// Create a consent and add it to the user
+// Create a consent and add it to the users consent file. This function will
+// return with the transaction hash. The ConsentFactory will send an event when
+// the mining is finished.
+//
+// See consent.sol for details.
 //
 ConsentHandler.prototype.createConsent = function (file, purpouse, languageCountry)
 {
-    return this.consentFactory.createConsent.sendTransaction (file, purpouse, languageCountry, {from: this.account, gas: 4000000});
+    return this.consentFactory.createConsent.sendTransaction (file, purpouse, languageCountry, {from: this.account, gas: 8000000});
 }
 
 //
-// Add an event listener to the consent factory
+// Add an event listener to the ConsentFactory contract. This will get called
+// for all events.
+//
+// See consent.sol for details.
 //
 ConsentHandler.prototype.allEventsHandler = function (mined)
 
@@ -156,7 +176,11 @@ ConsentHandler.prototype.allEventsHandler = function (mined)
 }
 
 //
-// Create a new consent file
+// Create a new consent file for a specific user. The user has to be the accound id
+// on the blockchain. It will return with the transaction hash. An event will be fired
+// when the mining is finished.
+//
+// See consent.sol for details.
 //
 ConsentHandler.prototype.createConsentFile = function (_user)
 {
@@ -164,7 +188,7 @@ ConsentHandler.prototype.createConsentFile = function (_user)
 }
 
 //
-// Set up the exporting
+// Set up the export of the ConsentHandler
 //
 
 module.exports = ConsentHandler
