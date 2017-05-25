@@ -57,6 +57,13 @@ router.get('/logout', function(req, res) {
     res.redirect('/');
 });
 
+router.get('/createconsent', function (req, res) {
+    console.log ("Creating consent for " + req.user.username);
+    txhash = consentHandler.createConsent (req.user.consents, "VSCRAD", "no-SE");
+    console.log ("Transaction hash = " + txhash);
+    res.redirect ('/');
+});
+
 router.get('/ping', function(req, res){
     res.status(200).send("pong!");
 });

@@ -9,6 +9,7 @@
 //
 
 var ConsentHandler = require ('./consent.js');
+var util = require ('util');
 
 //
 // Check arguments
@@ -41,16 +42,6 @@ function contractMined (error,result)
     }
 }
 
-function newTemplatesMined (error,result)
-{
-    if (!error) {
-	console.log ("Transaction = " + result);
-    } else {
-	console.log ("Transaction failed");
-	console.log (err);
-    }
-}
-
 function addSomeConsentTemplates (factory)
 {
     consentHandler.setConsentFactoryAddress (factory);
@@ -58,8 +49,8 @@ function addSomeConsentTemplates (factory)
     consentHandler.saveConfiguration();
     console.log("The configuration file config.json has been updated with the new factory address");
     console.log ("Adding some consent templates for testing purpouses");
-    consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE", newTemplatesMined);
-    consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE", newTemplatesMined);
+    console.log("Txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
+    console.log("Txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
 }
 
 // Create the factory for the consents

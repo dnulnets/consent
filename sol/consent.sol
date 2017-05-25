@@ -160,10 +160,13 @@ contract ConsentFactory {
   mapping (string => ConsentLanguageCountry) private consentPurpouses;
   
   /* Events generated when the consent has been created */
-  event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address consent);
+  event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address indexed file, address consent);
   event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
   event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
-  event ConsentFactoryTemplateAdded (address indexed owner, address factory, string purpouse);
+  event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, string purpouse, string languageCountry);
+
+  /* Debugging stuff */
+  event ConsentFactoryDebug (string text, uint16 value, bool flag);
   
   /* Constructor for the consent factory */
   function ConsentFactory() public
@@ -176,9 +179,9 @@ contract ConsentFactory {
   {
     consentPurpouses[_purpouse].exist = true;
     consentPurpouses[_purpouse].consentTemplates[_languageCountry] = ConsentTemplate ({version: _version, title: _title, text: _text});
-    ConsentFactoryTemplateAdded (owner, this, _purpouse);    
+    ConsentFactoryTemplateAdded (owner, this, _purpouse, _languageCountry);    
   }
-
+  
   /* Create a file that holds a users all consents
    * 
    * This is the file that holds all consents regardless of their state.
@@ -208,7 +211,7 @@ contract ConsentFactory {
     if (ct.version > 0) {
       consent = new Consent (cf.getOwner(), _purpouse, ct.version, ct.title, ct.text, _languageCountry);
       ConsentFile(_file).addConsent (consent);
-      ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), consent);
+      ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), _file, consent);
     } else {
       ConsentFactoryFailedEvent(owner, cf.getOwner(), Error.no_such_template);
     }
@@ -224,19 +227,20 @@ contract ConsentFactory {
   function getTemplate (string _purpouse, string _languageCountry) constant internal returns (ConsentTemplate)
   {
     ConsentTemplate memory ct = ConsentTemplate({version:0, title: "", text: ""});
-
+    
     /* Get the consents for a specific purpouse */
-    ConsentLanguageCountry clc = consentPurpouses[_purpouse];
+    ConsentLanguageCountry clc = consentPurpouses[_purpouse];    
     if (clc.exist) {
 
       /* Get the specific consent for the language and country */
-      ct = clc.consentTemplates[_languageCountry];
+      ct = clc.consentTemplates[_languageCountry];      
       if (ct.version==0) {
 
 	/* Fallback here is to only go for the default language of the country */
 	/* So we need to strip the language from the country */
 	bytes memory b = bytes (_languageCountry);
 	if (b.length==5) {
+	  ConsentFactoryDebug("Value of b[2]", uint16(b[2]), false);	  
 	  if (b[2] == 45) {
 	    bytes memory c = new bytes(2);
 	    c[0] = b[3];

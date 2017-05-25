@@ -133,9 +133,17 @@ ConsentHandler.prototype.setConsentFactoryAddress = function (address)
 //
 // Add new templates to the factory
 //
-ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry, mined)
+ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry)
 {
-    return this.consentFactory.addConsentTemplate (purpouse, version, title, text, languageCountry, mined);
+    return this.consentFactory.addConsentTemplate.sendTransaction (purpouse, version, title, text, languageCountry, {from: this.account, gas: 4000000});
+}
+
+//
+// Create a consent and add it to the user
+//
+ConsentHandler.prototype.createConsent = function (file, purpouse, languageCountry)
+{
+    return this.consentFactory.createConsent.sendTransaction (file, purpouse, languageCountry, {from: this.account, gas: 4000000});
 }
 
 //

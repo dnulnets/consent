@@ -16,6 +16,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var Account = require('./models/account');
+var util = require('util');
 
 //
 // Own developed requirements
@@ -69,7 +70,7 @@ var event = consentHandler.allEventsHandler (function (err,res) {
 	    
 	} else {
 
-	    console.log ("Unhandled event = " + event + "(" + args + ")");
+	    console.log ("Unhandled event = " + event + "(" + util.inspect(args) + ")");
 	    
 	}
 
