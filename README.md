@@ -1,7 +1,7 @@
 # Consent Handling Prototype
 An investigative  prototype for consent handling using an ethereum blockchain based on PoA, a web server (express on node) and a mongo database.
 
-It is in no way complete or claim to ever be completed and is focusing on the process of handling consents on a blockchain.
+It is in no way complete and there is no claim of it ever being completed. It is focusing on the process of handling consents on a blockchain and to learn the functionality, pros and cons of a blockchain supporting this use case.
 
 **This is work in progress.**
 ## What is a consent?
@@ -40,7 +40,7 @@ The blockchain has three contracts.
 
 An express web server with a couple of pages to create new users and allow them to manage their consents during logins.
 
-A couple of node javascripts to setup the ethereum blockchain and initiate a ConsentFactory on the blockchain that is used by the express web server.
+A couple of node javascripts to setup the ethereum blockchain and initiate a ConsentFactory and consent templates on the blockchain that is used by the express web server.
 
 ## What needs to be done
 
@@ -52,5 +52,3 @@ This is just a few items that needs to be sorted out:
 - Signature, how to handle that on the consents or is it enough as it is?
 - Better authentication, 2FA.
 - The contract model is that really the way to go? What to put in the blockchain and what to put in the mongo database. Need disucssions?
-
-
