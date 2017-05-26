@@ -11,37 +11,18 @@ var fs = require('fs');
 //
 // The Consent Handler object
 //
-var ConsentHandler = function (password, account) {
-
-    //
-    // Get hold of the configuration
-    //
-    try {
-	this.config = JSON.parse(fs.readFileSync('config.json'));
-    } catch (err) {
-	this.config = {web3url: "http://localhost:8545"};
-	if (err.code != 'ENOENT') {
-	    console.log ("Unable to open configuration file, regressing to default");
-	} else {
-	    console.log ("No configuration file found, using default");
-	}
-    }
+var ConsentHandler = function (web3url, consentFactory, password, account) {
 
     //
     // Get hold of the web3 interface
     //
-    this.web3 = new Web3(new Web3.providers.HttpProvider(this.config.web3url));
+    this.web3 = new Web3(new Web3.providers.HttpProvider(web3url));
 
     //
     // Determine the account, use coinbase as default. Unlock it and use
     // it as default account.
     //
-    this.account = this.web3.eth.coinbase;
-    if (typeof this.config.account !== 'undefined')
-	this.account = this.config.account;
-    if (typeof account !== 'undefined')
-	this.account = account;
-    
+    this.account = account || this.web3.eth.coinbase;    
     console.log ('Using account ' + this.account);
     this.web3.eth.defaultAccount = this.account;
     console.log ('Unlocking account ' + this.account);
@@ -81,13 +62,12 @@ var ConsentHandler = function (password, account) {
     // Get holds of the consent factory if we have one configured, otherwise log it
     // and ask the user to runt the setup script.
     //
-    if (typeof this.config.consentFactory !== 'undefined') {
-	console.log ("Using configured consent factory at " + this.config.consentFactory);
-	this.consentFactory = this.consentFactoryContract.at (this.config.consentFactory);
+    if (consentFactory !== 'undefined') {
+	console.log ("Using consent factory at " + consentFactory);
+	this.consentFactory = this.consentFactoryContract.at (consentFactory);
     } else {
-	console.log ("No consent factory configured, run the setup script to generate a factory.");
+	console.log ("Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
     }
-
 }
 
 //
@@ -102,19 +82,6 @@ ConsentHandler.prototype.newAccount = function (password)
     var account = this.web3.personal.newAccount (password);
     console.log ("New account = " + account);
     return account;
-}
-
-//
-// Saves the configuration as a JSON structure to config.json
-//
-ConsentHandler.prototype.saveConfiguration = function ()
-{
-    try {
-	fs.writeFileSync('config.json', JSON.stringify(this.config));
-    } catch (err) {
-	console.log ("Unable to save configuration file " + err.code);
-	return;
-    }
 }
 
 //

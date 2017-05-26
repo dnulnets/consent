@@ -22,7 +22,7 @@ var util = require('util');
 // Own developed requirements
 //
 var ConsentHandler = require ('./lib/consent.js');
-consentHandler = new ConsentHandler ("mandelmassa");
+consentHandler = new ConsentHandler (config.web3url, config.consentFactory, process.argv[2]);
 
 // Set up the eventhandlers for the blockchain
 var event = consentHandler.allEventsHandler (function (err,res) {
