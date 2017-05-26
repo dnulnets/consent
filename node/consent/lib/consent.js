@@ -1,6 +1,5 @@
 //
-// Sets up global default variables and functions needed for this
-// consent handling prototype on node.js
+// Creates a ConsentHandler object that work with one geth node.
 //
 // Copyright (c) 2017, Tomas Stenlund, All rights reserved
 //
@@ -23,9 +22,9 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     // it as default account.
     //
     this.account = account || this.web3.eth.coinbase;    
-    console.log ('Using account ' + this.account);
+    console.log ('ConsentHandler: Using account ' + this.account);
     this.web3.eth.defaultAccount = this.account;
-    console.log ('Unlocking account ' + this.account);
+    console.log ('ConsentHandler: Unlocking account ' + this.account);
     try {
 	this.web3.personal.unlockAccount(this.account, password);
     } catch (e) {
@@ -36,12 +35,12 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     //
     // Create the contracts binary interface
     //
-    console.log ('Loading contract binaries and interface descriptions');
+    console.log ('ConsentHandler: Loading contract binaries and interface descriptions');
     var consentSRC;
     try {
 	consentSRC = fs.readFileSync('../../sol/generated/consent.json');
     } catch (err) {
-	console.log ('Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
+	console.log ('ConsentHandler: Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
 	return;
     }
     this.consentContracts = JSON.parse(consentSRC)["contracts"];
@@ -63,10 +62,10 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     // and ask the user to runt the setup script.
     //
     if (consentFactory !== 'undefined') {
-	console.log ("Using consent factory at " + consentFactory);
+	console.log ("ConsentHandler: Using consent factory at " + consentFactory);
 	this.consentFactory = this.consentFactoryContract.at (consentFactory);
     } else {
-	console.log ("Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
+	console.log ("ConsentHandler: Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
     }
 }
 
@@ -80,7 +79,7 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
 ConsentHandler.prototype.newAccount = function (password)
 {
     var account = this.web3.personal.newAccount (password);
-    console.log ("New account = " + account);
+    console.log ("ConsentHandler: New account = " + account);
     return account;
 }
 

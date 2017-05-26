@@ -3,6 +3,10 @@
 //
 // Usage is : npm start <password to unlock blockchain account> <password for certificate private key>
 //
+// Starts up the consent web server
+//
+// Copyright (c) 2017, Tomas Stenlund, All rights reserved
+//
 if (process.argv.length != 4) {
     console.log('npm start <password to unlock blockchain account> <password for certificate private key>');
     return;
@@ -15,13 +19,12 @@ var fs = require('fs');
 try {
     config = JSON.parse(fs.readFileSync('config.json'));
 } catch (err) {
-    config = {web3url: "http://localhost:8545"};
     if (err.code != 'ENOENT') {
 	console.log ("Unable to open configuration file");
-	throw err;
     } else {
 	console.log ("No configuration file found, using default");
     }
+    return;
 }
 
 /**
@@ -45,7 +48,6 @@ app.set('port', portS);
 /**
 * Create the HTTP server. It will always redirect to HTTPS.
 */
-// Secondary http app
 var httpApp = express();
 var httpRouter = express.Router();
 httpApp.use('*', httpRouter);
@@ -72,7 +74,6 @@ var serverS = https.createServer(credentials, app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);

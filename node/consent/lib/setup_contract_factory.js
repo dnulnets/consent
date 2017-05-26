@@ -35,7 +35,7 @@ function contractMined (error,result)
     if (!error) {
 	if (result.address!=undefined) {
             console.log("Your consent factory contract is mined and got address " + result.address);
-            console.log("Make sure you update the config.json");
+            console.log("Make sure you update consentFactory field in config.json");
 	    addSomeConsentTemplates(result.address);
 	}
     } else {
@@ -47,8 +47,8 @@ function addSomeConsentTemplates (factory)
 {
     consentHandler.setConsentFactoryAddress (factory);
     console.log ("Adding some consent templates for testing purpouses");
-    console.log("Txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
-    console.log("Txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
+    console.log("txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
+    console.log("txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
 }
 
 // Create the factory for the consents
