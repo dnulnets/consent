@@ -12,6 +12,7 @@ if (process.argv.length != 4) {
     return;
 }
 
+console.log ("WWW: Reading configuration from config.json");
 //
 // Get hold of the configuration
 //
@@ -19,12 +20,8 @@ var fs = require('fs');
 try {
     config = JSON.parse(fs.readFileSync('config.json'));
 } catch (err) {
-    if (err.code != 'ENOENT') {
-	console.log ("Unable to open configuration file");
-    } else {
-	console.log ("No configuration file found, using default");
-    }
-    return;
+    console.log ("WWW: Unable to open configuration file = " + err);
+    throw "WWW: Missing configuration file";
 }
 
 /**
@@ -59,17 +56,28 @@ httpRouter.get('*', function(req, res){
     var destination = ['https://', host, req.url].join('');
     return res.redirect(destination);
 });
-var server = http.createServer(httpApp);
+
+try {
+    var server = http.createServer(httpApp);
+} catch (err) {
+    console.log ("WWW: Unable to create HTTP server = " + err);
+    throw "WWW: Unable to create HTTP server";
+}
 
 /**
  * Create HTTPS server. This will be handled by the application
  */
-var privateKey  = fs.readFileSync(config.privateKey, 'utf8');
-var certificate = fs.readFileSync(config.certificate, 'utf8');
-var ca = fs.readFileSync(config.ca, 'utf8');
-var ica = fs.readFileSync(config.ica, 'utf8');
-var credentials = { key: privateKey, cert: certificate, passphrase: process.argv[3], ca: [ca, ica] };
-var serverS = https.createServer(credentials, app);
+try {
+    var privateKey  = fs.readFileSync(config.privateKey, 'utf8');
+    var certificate = fs.readFileSync(config.certificate, 'utf8');
+    var ca = fs.readFileSync(config.ca, 'utf8');
+    var ica = fs.readFileSync(config.ica, 'utf8');
+    var credentials = { key: privateKey, cert: certificate, passphrase: process.argv[3], ca: [ca, ica] };
+    serverS = https.createServer(credentials, app);
+} catch (err) {
+    console.log ("WWW: Unable to create HTTPS server, make sure you got the certificate and keys setup properly = " + err);
+    throw "WWW: Unable to create HTTPS server";
+}
 
 /**
  * Listen on provided port, on all network interfaces.

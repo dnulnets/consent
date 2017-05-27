@@ -28,8 +28,8 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     try {
 	this.web3.personal.unlockAccount(this.account, password);
     } catch (e) {
-	console.log(e);
-	return;
+	console.log("ConsentHandler: Unable to unlock account = " + e);
+	throw "ConsentHandler: Unable to unlock account";
     }
 
     //
@@ -79,7 +79,7 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
 ConsentHandler.prototype.newAccount = function (password)
 {
     var account = this.web3.personal.newAccount (password);
-    console.log ("ConsentHandler: New account = " + account);
+    console.log ("ConsentHandler: New account created = " + account);
     return account;
 }
 

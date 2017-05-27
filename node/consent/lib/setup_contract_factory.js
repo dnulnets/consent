@@ -34,24 +34,25 @@ function contractMined (error,result)
 {
     if (!error) {
 	if (result.address!=undefined) {
-            console.log("Your consent factory contract is mined and got address " + result.address);
-            console.log("Make sure you update consentFactory field in config.json");
+            console.log("Setup: Your consent factory contract is mined and got address " + result.address);
+            console.log("Setup: Make sure you update consentFactory field in config.json");
 	    addSomeConsentTemplates(result.address);
 	}
     } else {
-	console.log (error);
+	console.log ("Setup: Mining error = " + error);
+	throw "Setup: Mining error";
     }
 }
 
 function addSomeConsentTemplates (factory)
 {
     consentHandler.setConsentFactoryAddress (factory);
-    console.log ("Adding some consent templates for testing purpouses");
-    console.log("txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
-    console.log("txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
+    console.log ("Setup: Adding some consent templates for testing purpouses");
+    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
+    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
 }
 
 // Create the factory for the consents
 //
-console.log ("Creating a new consent factory");
+console.log ("Setup: Creating a new consent factory");
 consentHandler.newConsentFactory (contractMined);

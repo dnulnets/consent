@@ -41,42 +41,42 @@ var event = consentHandler.allEventsHandler (function (err,res) {
 	//
 	if (event == 'ConsentFactoryFileCreatedEvent') {
 	    
-	    console.log ("Consent file for account " + args.user + " has been mined");
-	    console.log ("Consent file has address " + args.file);
+	    console.log ("Application: Consent file for account " + args.user + " has been mined");
+	    console.log ("Application: Consent file has address " + args.file);
 	    Account.findOne({
                 'coinbase' : args.user
             },function(err,user){
 
 		if (!err) {
 		    
-		    console.log ("User located _id = " + user._id);
+		    console.log ("APP: User located _id = " + user._id);
 		    Account.update(
 			{_id: user._id}, 
 			{consents : args.file },
 			{multi:true}, 
 			function(err, numberAffected){
 			    if (!err)
-				console.log ("Consent file address is inserted into the user record");
+				console.log ("Application: Consent file address is inserted into the user record");
 			    else
-				console.log ("Failed to update the user record with the consent file = " + err);
+				console.log ("Application: Failed to update the user record with the consent file = " + err);
 			});
 		    
 		} else {
 
-		    console.log ("Failed to locate the user = " + err);
+		    console.log ("Application: Failed to locate the user = " + err);
 		    
 		}
 	    });
 	    
 	} else {
 
-	    console.log ("Unhandled event = " + event + "(" + util.inspect(args) + ")");
+	    console.log ("Application: Unhandled event ignored = " + event + "(" + util.inspect(args) + ")");
 	    
 	}
 
     } else {
 	
-        console.log("Unable to handle events from the blockchain = " + err);
+        console.log("Application: Unable to handle events from the blockchain = " + err);
     }
 });
 

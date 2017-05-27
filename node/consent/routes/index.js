@@ -16,7 +16,7 @@ router.post('/register', function(req, res) {
 
     // Create a blockchain account for this user. Is this how we really should do it???
     var id = consentHandler.newAccount (req.body.password);
-    console.log ("Blockchain id for user " + req.body.username + " got account " + id);
+    console.log ("Router: Blockchain id for user " + req.body.username + " got account " + id);
     Account.register(new Account({ username : req.body.username, coinbase : id }), req.body.password, function(err, account) {
 
 	// Was it succesfull?
@@ -28,7 +28,7 @@ router.post('/register', function(req, res) {
         passport.authenticate('local')(req, res, function () {
 
 	    // Start mining a consent list
-	    console.log ("Mining for a consent file for user " + req.body.username + ", blockchain id " + id);
+	    console.log ("Router: Mining for a consent file for user " + req.body.username + ", blockchain id " + id);
 	    consentHandler.createConsentFile (id);
 	    
 	    // Redirect us to the logged in page
@@ -58,9 +58,9 @@ router.get('/logout', function(req, res) {
 });
 
 router.get('/createconsent', function (req, res) {
-    console.log ("Creating consent for " + req.user.username);
+    console.log ("Router: Creating consent for " + req.user.username);
     txhash = consentHandler.createConsent (req.user.consents, "VSCRAD", "no-SE");
-    console.log ("Transaction hash = " + txhash);
+    console.log ("Router: Transaction hash = " + txhash);
     res.redirect ('/');
 });
 
