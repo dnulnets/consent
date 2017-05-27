@@ -3,6 +3,7 @@ include mixins
 
 block content
   +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "list" ) List of consents
       +nav_item( "logout" ) Logout
   .container-fluid
     h1 Consent Listing
@@ -10,15 +11,15 @@ block content
       table.table.table-hover
         thead
           tr
-            th Firstname
-            th Lastname
+            th(wdith="30%") Contract
+            th(width="60%") Title
+            th(width="5%") Version
+            th(width="5%") Status
         tbody
-          tr
-            td Tomas
-            td Stenlund
-          tr
-            td Peter
-            td Stenlund
-          tr
-            td Lars
-            td Stenlund
+          each val in consents
+            tr
+              td= val.id
+              td= val.title
+              td= val.version
+              td= val.status
+

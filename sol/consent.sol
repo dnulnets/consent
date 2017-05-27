@@ -117,6 +117,7 @@ contract Consent {
   /* Returns the consent template that this consent is based on */
   function getTemplate() constant returns (ConsentTemplate)
   {
+    return ConsentTemplate(consentTemplate);
   }
   
   /* Function to recover the funds on the contract */

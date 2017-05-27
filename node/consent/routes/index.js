@@ -1,15 +1,68 @@
+//
+// Consent handling routes.
+//
+// This file contains the express application routes to demonstrate consent
+// handling.
+//
+// Copyright (c) 2017, Tomas Stenlund, All rights reserved
+//
 var express = require('express');
 var passport = require('passport');
 var Account = require('../models/account');
 var router = express.Router();
 const util = require('util');
 
+//
+// Check if the user is logged in
+//
+function loggedInUser(req, res, next) {
+    if (req.user) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
+
+function loggedInAdmin(req, res, next) {
+    if (req.user) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+}
+
+//
+// Root pages
+//
 router.get('/', function (req, res) {
     res.render('index', { user : req.user });
 });
 
-router.get ('/list', function (req, res) {
-    res.render ('list', { user : req.user });
+//
+// Provides a list of consents for a specific user. The user has to be logged in.
+//
+router.get ('/list', loggedInUser, function (req, res) {
+
+    //
+    // get hold of the consent file for the user
+    //    
+    var user = req.user;
+    if (typeof user.consents !== 'undefined' && user.consents) {
+	var consentFile = consentHandler.consentFileContract.at(user.consents);
+	var list = consentFile.getListOfConsents();
+	var len = list.length;
+	var listOfConsents = [];
+	for(i=0; i<len; i++) {
+	    var consent = consentHandler.consentContract.at(list[i]);
+	    var id = consent.getTemplate();
+	    var consentTemplate = consentHandler.consentTemplateContract.at(id);	    
+	    var item = {id: list[i], title: consentTemplate.getTitle(), version: consentTemplate.getVersion().toNumber(), status: consent.getStatus().toNumber()};
+	    listOfConsents.push(item);
+	}	
+	console.log (listOfConsents);
+    }
+    
+    res.render ('list', { user : user, consents : listOfConsents });
 });
 
 //
