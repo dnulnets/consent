@@ -8,6 +8,13 @@ router.get('/', function (req, res) {
     res.render('index', { user : req.user });
 });
 
+router.get ('/list', function (req, res) {
+    res.render ('list', { user : req.user });
+});
+
+//
+// /register
+//
 router.get('/register', function(req, res) {
     res.render('register', { });
 });
@@ -38,6 +45,9 @@ router.post('/register', function(req, res) {
     });
 });
 
+//
+// /login
+//
 router.get('/login', function(req, res) {
     res.render('login', { user : req.user });
 });
@@ -52,6 +62,9 @@ router.post('/login', passport.authenticate('local'), function(req, res) {
     res.redirect('/');
 });
 
+//
+// /logout
+//
 router.get('/logout', function(req, res) {
     req.logout();
     res.redirect('/');

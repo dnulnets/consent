@@ -1,0 +1,24 @@
+extends layout
+include mixins
+
+block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "logout" ) Logout
+  .container-fluid
+    h1 Consent Listing
+    div
+      table.table.table-hover
+        thead
+          tr
+            th Firstname
+            th Lastname
+        tbody
+          tr
+            td Tomas
+            td Stenlund
+          tr
+            td Peter
+            td Stenlund
+          tr
+            td Lars
+            td Stenlund
