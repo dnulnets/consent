@@ -24,10 +24,10 @@ contract ConsentTemplate {
   uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
   string  private title;        /* The title of the consent */
   string  private text;         /* The text that describes the purpouse of the consent */
-  string  private languageCountry;       /* The language and country the consent template is valid for
+  string  private languageCountry;       /* The language and country the consent template that it is valid for
 					  *
 					  * Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
-					  * separated by a dash, so for swedish in Sweden it is sv-SE */
+					  * separated by a dash, so for swedish in Sweden it is "sv-SE" */
 
   /* Creates the contract and set the values of the contract. */
   function ConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
@@ -191,13 +191,17 @@ contract ConsentFactory {
   
   /* The owner of this contract */
   address private owner;  /* Who owns this Consent Facotory, this is a company */
-
+  
   /* Contains a map from language and country according to ISO 639 and ISO 3166-1 alpha 2 separated by a dash to
    * consent template. For example swedish in Sweden is written sv-SE */
   struct ConsentLanguageCountry {
-    bool exist; /* If there exists any consents, true if yes, false otherwsie */
-    mapping (string => ConsentTemplate) consentTemplates;
+    bool exist;                                                 /* If there exists any consents, true if yes, false otherwsie */
+    mapping (string => ConsentTemplate[]) consentTemplates;     /* An array of templates keyed to language and country */
+    string[] languagesAndCountries;                               /* An array containing all languages and countries in the mapping */
   }
+
+  /* A dynamic array that contains all purpouses that this factory handles */
+  string[] private purpouses;
   
   /* Contains a map from purpouse to language and country mapping */
   mapping (string => ConsentLanguageCountry) private consentPurpouses;
@@ -207,9 +211,6 @@ contract ConsentFactory {
   event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
   event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
   event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, address template);
-
-  /* Debugging stuff */
-  event ConsentFactoryDebug (string text, uint16 value, bool flag);
   
   /* Constructor for the consent factory */
   function ConsentFactory() public
@@ -217,13 +218,40 @@ contract ConsentFactory {
     owner = msg.sender;
   }
 
-  /* Adds a consent template to the factory to be used for futre consent generation. */
+  /* Adds a consent template to the factory to be used for consent generation. */
   function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry)    
   {
-    consentPurpouses[_purpouse].exist = true;
+    /* Add the template last, i.e. the newest template, for the specific language, country and purpouse */
+    if (!consentPurpouses[_purpouse].exist)
+      purpouses.push (_purpouse);
+    consentPurpouses[_purpouse].exist = true;    
     ConsentTemplate consentTemplate = new ConsentTemplate (_purpouse, _version, _title, _text, _languageCountry);
-    consentPurpouses[_purpouse].consentTemplates[_languageCountry] = consentTemplate;
+    if (consentPurpouses[_purpouse].consentTemplates[_languageCountry].length==0)
+      consentPurpouses[_purpouse].languagesAndCountries.push (_languageCountry);
+    consentPurpouses[_purpouse].consentTemplates[_languageCountry].push (consentTemplate);
     ConsentFactoryTemplateAdded (owner, this, consentTemplate);    
+  }
+
+  function getNumberOfPurpouses() constant returns (uint length)
+  {
+    return purpouses.length;
+  }
+  
+  function getNumberOfLanguagesAndCountries(uint index) constant returns (uint length)
+  {
+    if (consentPurpouses[purpouses[index]].exist) {
+      return  consentPurpouses[purpouses[index]].languagesAndCountries.length;
+    } else {
+      return 0;
+    }
+  }
+
+  function getConsentTemplates(uint purpouseIndex, uint languageAndCountryIndex) constant returns (ConsentTemplate[])
+  {
+    ConsentTemplate[] memory ctl;    
+    if (consentPurpouses[purpouses[purpouseIndex]].exist)
+      ctl =  consentPurpouses[purpouses[purpouseIndex]].consentTemplates[consentPurpouses[purpouses[purpouseIndex]].languagesAndCountries[languageAndCountryIndex]];
+    return ctl;
   }
   
   /* Create a file that holds a users all consents
@@ -232,9 +260,7 @@ contract ConsentFactory {
    */
   function createConsentFile (address _user)
   {
-    address file;
-
-    file = new ConsentFile (_user);
+    address file = new ConsentFile (_user);
     ConsentFactoryFileCreatedEvent(owner, _user, file);
   }
   
@@ -249,7 +275,8 @@ contract ConsentFactory {
     ConsentFile cf = ConsentFile (_file);
     ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);
     if (ct != address(0)) {
-      
+
+      /* We got a template so generate the consent and put it into the consent file */
       Consent consent = new Consent (cf.getOwner(), ct);
       ConsentFile(_file).addConsent (consent);
       ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), _file, consent);
@@ -271,13 +298,16 @@ contract ConsentFactory {
   /* This function tests wether a consent for a specific purpouse exists or not */
   function getTemplate (string _purpouse, string _languageCountry) constant internal returns (ConsentTemplate)
   {
+    ConsentTemplate ct; /* Holds the found template */
+    uint256 len; /* Holds the length of the template array so we can take the last one */
+    
     /* Get the consents for a specific purpouse */
     ConsentLanguageCountry clc = consentPurpouses[_purpouse];
     if (clc.exist) {
 
       /* Get the specific consent for the language and country */
-      ConsentTemplate ct = clc.consentTemplates[_languageCountry];
-      if (ct == address(0)) {
+      len = clc.consentTemplates[_languageCountry].length;
+      if (len == 0) {
 	
 	/* Fallback here is to only go for the default language of the country */
 	/* So we need to strip the language from the country */
@@ -285,15 +315,22 @@ contract ConsentFactory {
 	if (b.length==5) {
 	  if (b[2] == 45) {
 	    bytes memory c = new bytes(2);
+
+	    /* Get the country */
 	    c[0] = b[3];
-	    c[1] = b[4];	    
-	    ct = clc.consentTemplates[string(c)];
+	    c[1] = b[4];
+	    len = clc.consentTemplates[string(c)].length;
+
+	    /* Get the last consent */
+	    if (len > 0)
+	      ct = clc.consentTemplates[string(c)][len-1];
 	  }
-	}
+	}	
+      } else {
+	ct = clc.consentTemplates[_languageCountry][len-1];
       }
     }
-    
-    /* Return with the found template */
+
     return ct;
   }
   
