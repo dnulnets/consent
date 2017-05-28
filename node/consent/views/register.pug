@@ -5,7 +5,7 @@ block content
   +nav("Consent Handling", "dropdown_menu", "inverse")
     if (!user)
       +nav_item( "login" ) Login
-      +nav_item( "register" ) Register
+      +nav_item( "register", "active" ) Register
     if (user)
       +nav_item( "logout" ) Logout
   .container-fluid

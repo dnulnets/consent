@@ -4,7 +4,7 @@ include mixins
 block content
   +nav("Consent Handling", "dropdown_menu", "inverse")
     if (!user)
-      +nav_item( "login" ) Login
+      +nav_item( "login", "active" ) Login
       +nav_item( "register" ) Register
     if (user)
       +nav_item( "logout" ) Logout
