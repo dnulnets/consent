@@ -43,6 +43,9 @@ router.get('/', function (req, res) {
 //
 router.get ('/list', loggedInUser, function (req, res) {
 
+    var listOfConsents = [];
+    var mined = true;
+    
     //
     // get hold of the consent file for the user
     //    
@@ -51,18 +54,31 @@ router.get ('/list', loggedInUser, function (req, res) {
 	var consentFile = consentHandler.consentFileContract.at(user.consents);
 	var list = consentFile.getListOfConsents();
 	var len = list.length;
-	var listOfConsents = [];
 	for(i=0; i<len; i++) {
 	    var consent = consentHandler.consentContract.at(list[i]);
 	    var id = consent.getTemplate();
 	    var consentTemplate = consentHandler.consentTemplateContract.at(id);	    
 	    var item = {id: list[i], title: consentTemplate.getTitle(), version: consentTemplate.getVersion().toNumber(), status: consent.getStatus().toNumber()};
 	    listOfConsents.push(item);
-	}	
-	console.log (listOfConsents);
+	}
+    } else {
+	mined = false;
     }
     
-    res.render ('list', { user : user, consents : listOfConsents });
+    res.render ('list', { user : user, consents : listOfConsents, mined : mined });
+});
+
+//
+// Provides a consent page where you can deny or allow a specific consent.
+//
+router.get ('/consent/:consentId', loggedInUser, function (req, res) {
+    var user = req.user;
+    var consent = consentHandler.consentContract.at(req.params.consentId);
+    console.log (consent);
+    var id = consent.getTemplate();
+    var consentTemplate = consentHandler.consentTemplateContract.at(id);
+    var item = {id: req.params.consentId, title: consentTemplate.getTitle(), text: consentTemplate.getText(), version: consentTemplate.getVersion().toNumber(), status: consent.getStatus().toNumber()};
+    res.render ('consent', { user : user, consent : item });
 });
 
 //

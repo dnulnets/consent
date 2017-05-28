@@ -1,0 +1,30 @@
+extends layout
+include mixins
+
+block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "list" ) List of consents
+      +nav_item( "logout" ) Logout
+  .container-fluid
+    h1 Consent
+    table.table.table-hover
+      thead
+        tr
+          th(wdith="10%") Field
+          th(width="90%") Value
+      tbody
+        tr
+          td Contract #
+          td= consent.id
+        tr
+          td Title
+          td= consent.title
+        tr
+          td Text
+          td= consent.text
+        tr
+          td Version
+          td= consent.version
+        tr
+          td Status
+          td= consent.status

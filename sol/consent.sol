@@ -92,6 +92,7 @@ contract Consent {
     giver = _giver;
     owner = msg.sender;
     consentTemplate = _consentTemplate;
+    status = Status.requested;
   }
 
   /* Sets the status of the consent, this can only be done by the giver. Should have a modifier for that. */

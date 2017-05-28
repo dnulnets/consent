@@ -18,8 +18,8 @@ block content
         tbody
           each val in consents
             tr
-              td= val.id
+              td
+                a(href='/consent/'+val.id) #{val.id}
               td= val.title
               td= val.version
               td= val.status
-
