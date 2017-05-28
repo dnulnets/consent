@@ -28,3 +28,10 @@ block content
         tr
           td Status
           td= consent.status
+    h1 What do you want to do with this consent?
+    a(href="/consentaction/"+consent.id+"/1",class="btn btn-success") Accept
+    b &nbsp;
+    a(href="/consentaction/"+consent.id+"/0",class="btn btn-success") Deny
+    b &nbsp;
+    a(href="/list",class="btn btn-danger") Cancel
+

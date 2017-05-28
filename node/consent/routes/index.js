@@ -13,6 +13,12 @@ var router = express.Router();
 const util = require('util');
 
 //
+// Status data
+//
+var statusString = ["Denied","Accepted","Requested","","Cancelled"];
+var statusActionString = ["deny", "accept", "request", "cancel"];
+
+//
 // Check if the user is logged in
 //
 function loggedInUser(req, res, next) {
@@ -23,16 +29,20 @@ function loggedInUser(req, res, next) {
     }
 }
 
+//
+// Check if the administrator is logged in
+//
 function loggedInAdmin(req, res, next) {
     if (req.user) {
-        next();
+	if (req.user.username === "admin")
+            next();
     } else {
         res.redirect('/login');
     }
 }
 
 //
-// Root pages
+// Root page
 //
 router.get('/', function (req, res) {
     res.render('index', { user : req.user });
@@ -42,9 +52,8 @@ router.get('/', function (req, res) {
 // Provides a list of consents for a specific user. The user has to be logged in.
 //
 router.get ('/list', loggedInUser, function (req, res) {
-
+    
     var listOfConsents = [];
-    var mined = true;
     
     //
     // get hold of the consent file for the user
@@ -58,14 +67,14 @@ router.get ('/list', loggedInUser, function (req, res) {
 	    var consent = consentHandler.consentContract.at(list[i]);
 	    var id = consent.getTemplate();
 	    var consentTemplate = consentHandler.consentTemplateContract.at(id);	    
-	    var item = {id: list[i], title: consentTemplate.getTitle(), version: consentTemplate.getVersion().toNumber(), status: consent.getStatus().toNumber()};
+	    var item = {id: list[i], title: consentTemplate.getTitle(),
+			version: consentTemplate.getVersion().toNumber(),
+			status: statusString[consent.getStatus().toNumber()]};
 	    listOfConsents.push(item);
 	}
-    } else {
-	mined = false;
     }
     
-    res.render ('list', { user : user, consents : listOfConsents, mined : mined });
+    res.render ('list', { user : user, consents : listOfConsents });
 });
 
 //
@@ -74,11 +83,24 @@ router.get ('/list', loggedInUser, function (req, res) {
 router.get ('/consent/:consentId', loggedInUser, function (req, res) {
     var user = req.user;
     var consent = consentHandler.consentContract.at(req.params.consentId);
-    console.log (consent);
     var id = consent.getTemplate();
     var consentTemplate = consentHandler.consentTemplateContract.at(id);
-    var item = {id: req.params.consentId, title: consentTemplate.getTitle(), text: consentTemplate.getText(), version: consentTemplate.getVersion().toNumber(), status: consent.getStatus().toNumber()};
+    var item = {id: req.params.consentId,
+		title: consentTemplate.getTitle(),
+		text: consentTemplate.getText(),
+		version: consentTemplate.getVersion().toNumber(),
+		status: statusString[consent.getStatus().toNumber()]};
     res.render ('consent', { user : user, consent : item });
+});
+
+//
+// Consent actions
+//
+router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, res) {
+    var user = req.user;
+    var consent = consentHandler.consentContract.at(req.params.consentId);
+    consent.setStatus (req.params.action);  
+    res.render ('consentaction', {user : user, action : statusActionString[req.params.action]});
 });
 
 //
@@ -122,13 +144,7 @@ router.get('/login', function(req, res) {
 });
 
 router.post('/login', passport.authenticate('local'), function(req, res) {
-    console.log ("--------------------------------------------------");    
-    console.log ("User is authenticated!");
-    console.log ("Request : " + util.inspect (req));
-    console.log ("--------------------------------------------------");
-    console.log ("Response : " + util.inspect (res));
-    console.log ("--------------------------------------------------");
-    res.redirect('/');
+    res.redirect('/list');
 });
 
 //
@@ -136,18 +152,14 @@ router.post('/login', passport.authenticate('local'), function(req, res) {
 //
 router.get('/logout', function(req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect('/login');
 });
 
 router.get('/createconsent', function (req, res) {
     console.log ("Router: Creating consent for " + req.user.username);
     txhash = consentHandler.createConsent (req.user.consents, "VSCRAD", "no-SE");
     console.log ("Router: Transaction hash = " + txhash);
-    res.redirect ('/');
-});
-
-router.get('/ping', function(req, res){
-    res.status(200).send("pong!");
+    res.redirect ('/list');
 });
 
 module.exports = router;
