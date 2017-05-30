@@ -1,0 +1,32 @@
+extends layout
+include mixins
+
+block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "/list" ) List of consents
+      +nav_item( "/listofactivetemplates", "active" ) List of templates
+      +nav_item( "/listofalltemplates" ) Template history
+      +nav_item( "/logout" ) Logout
+  .container-fluid
+    h1 Your active templates
+    div
+      table.table.table-hover
+        thead
+          tr
+            th(width="30%") Contract
+            th(width="5%") Purpouse
+            th(width="5%") Version
+            th(wdith="5%") Locale
+            th(width="50%") Title
+            th(width="5%") Action
+        tbody
+          each val in consents
+            tr
+              td
+                a(href='/consenttemplate/'+val.id) #{val.id}
+              td= val.purpouse
+              td= val.version
+              td= val.languageCountry
+              td= val.title
+              td
+                a(href="/templateaction/"+val.id+"/1",class="btn btn-success") Create

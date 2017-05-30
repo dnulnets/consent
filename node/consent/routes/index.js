@@ -104,6 +104,58 @@ router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, re
 });
 
 //
+// /listactivetemplates
+//
+router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
+    
+    var listOfTemplates = [];
+    
+    //
+    // get hold of the consent file for the user
+    //    
+    var user = req.user;
+    var list = consentHandler.consentFactory.getActiveConsentTemplates ();
+    var len = list.length;
+    for(i=0; i<len; i++) {
+	var consentTemplate = consentHandler.consentTemplateContract.at(list[i]);
+	var item = {id: list[i],
+		    purpouse: consentTemplate.getPurpouse(),
+		    version: consentTemplate.getVersion().toNumber(),
+		    languageCountry: consentTemplate.getLanguageCountry(),
+		    title: consentTemplate.getTitle()};
+	listOfTemplates.push(item);
+    }
+    
+    res.render ('listofactivetemplates', { user : user, consents : listOfTemplates });
+});
+
+//
+// /listalltemplates
+//
+router.get ('/listofalltemplates', loggedInUser, function (req, res) {
+    
+    var listOfTemplates = [];
+    
+    //
+    // get hold of the consent file for the user
+    //    
+    var user = req.user;
+    var list = consentHandler.consentFactory.getAllConsentTemplates ();
+    var len = list.length;
+    for(i=0; i<len; i++) {
+	var consentTemplate = consentHandler.consentTemplateContract.at(list[i]);
+	var item = {id: list[i],
+		    purpouse: consentTemplate.getPurpouse(),
+		    version: consentTemplate.getVersion().toNumber(),
+		    languageCountry: consentTemplate.getLanguageCountry(),
+		    title: consentTemplate.getTitle()};
+	listOfTemplates.push(item);
+    }
+    
+    res.render ('listofalltemplates', { user : user, consents : listOfTemplates });
+});
+
+//
 // /register
 //
 router.get('/register', function(req, res) {

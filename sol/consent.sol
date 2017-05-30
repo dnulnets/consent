@@ -51,11 +51,20 @@ contract ConsentTemplate {
     return title;
   }
 
+  function getPurpouse () constant returns (string)
+  {
+    return purpouse;
+  }
+  
   function getText () constant returns (string)
   {
     return text;
   }
 
+  function getLanguageCountry () constant returns (string)
+  {
+    return languageCountry;
+  }
 }
 
 /*
@@ -193,8 +202,8 @@ contract ConsentFactory {
   address private owner;  /* Who owns this Consent Facotory, this is a company */
 
   /* List of all templates in this factory */
-  address[] listOfAllConsentTemplates;
-  address[] listOfActiveConsentTemplates;
+  address[] private listOfAllConsentTemplates;
+  address[] private listOfActiveConsentTemplates;
   
   /* Contains a map from purpouse to language and country mapping to index into the list of active consent templates */
   mapping (string => mapping (string => uint)) private consentTemplates;
@@ -212,7 +221,6 @@ contract ConsentFactory {
   }
 
   /* Adds a consent template to the factory to be used for consent generation. */
-
   function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry)    
   {
     /* Add the template for the specific language, country and purpouse */
@@ -226,6 +234,18 @@ contract ConsentFactory {
     }
     listOfAllConsentTemplates.push(ct);
     ConsentFactoryTemplateAdded (owner, this, ct);    
+  }
+
+  /* Returns with a list of active consent templates */
+  function getActiveConsentTemplates() constant returns (address[])
+  {
+    return listOfActiveConsentTemplates;
+  }
+  
+  /* Returns with a list of all consent templates */
+  function getAllConsentTemplates() constant returns (address[])
+  {
+    return listOfAllConsentTemplates;
   }
   
   /* Create a file that holds a users all consents

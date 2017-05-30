@@ -3,25 +3,27 @@ include mixins
 
 block content
   +nav("Consent Handling", "dropdown_menu", "inverse")
-      +nav_item( "/list", "active" ) List of consents      
+      +nav_item( "/list" ) List of consents  
       +nav_item( "/listofactivetemplates" ) List of templates
-      +nav_item( "/listofalltemplates" ) Template history
+      +nav_item( "/listofalltemplates", "active") Template history
       +nav_item( "/logout" ) Logout
   .container-fluid
-    h1 Your consents
+    h1 All templates
     div
       table.table.table-hover
         thead
           tr
             th(width="30%") Contract
-            th(width="60%") Title
+            th(width="5%") Purpouse
             th(width="5%") Version
-            th(width="5%") Status
+            th(wdith="5%") Locale
+            th(width="55%") Title
         tbody
           each val in consents
             tr
               td
-                a(href='/consent/'+val.id) #{val.id}
-              td= val.title
+                a(href='/consenttemplate/'+val.id) #{val.id}
+              td= val.purpouse
               td= val.version
-              td= val.status
+              td= val.languageCountry
+              td= val.title
