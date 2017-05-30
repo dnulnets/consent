@@ -13,16 +13,16 @@ This is a common use case when a company wants to perform processing of informat
 
 From a company perspective:
 - As a company I would like to be able to have a set of consent templates that I can generate new consent forms from to offer our end users.
-- As a company I expect the consent template to specify a title, a body describing the purpouse of the consent.
+- As a company I expect the consent template to specify a purpouse, title and a body describing the purpouse of the consent.
 - As a company I would like to generate a new consent form for a specific user from a consent template based on my purpouse.
 - As a company I expect the system to choose the consent template when generating the consent form based on my purpouse, the users language and country.
-- As a company I would like to determine if a user has accepted a consent.
-- As a company I need to be able to provide a detailed audit trail of the consent handling for a specific user.
+- As a company I would like to determine if a user has accepted or denied a consent.
+- As a company I need to be able to provide a detailed audit trail of the consent handling for a specific user when requested.
 - As a company I expect the system to automatically generate new consents for the users if a consent template with the same purpouse as the initial consent is updated.
-- As a company I need to be able to offer of withdraw a consent at any time.
+- As a company I need to be able to request or withdraw a consent at any time.
 
 From a user perspective:
-- As a user I would like to know which consents I have been offered, are withdrawn, accepted, denied or defered.
+- As a user I would like to know which consents I have been requested to answer, are withdrawn, accepted, denied or defered.
 - As a user I would like to be able to deny or accept a consent at any time.
 - As a user I expect that if a consent gets updated the system adds that consent to my consent file as a new offer.
 
