@@ -94,6 +94,22 @@ router.get ('/consent/:consentId', loggedInUser, function (req, res) {
 });
 
 //
+// View a specific consent template
+//
+router.get ('/consenttemplate/:consentTemplateId', loggedInUser, function (req, res) {
+    var user = req.user;
+    var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+    var item = {id: req.params.consentTemplateId,
+		purpouse: consentTemplate.getPurpouse(),
+		locale: consentTemplate.getLanguageCountry(),
+		version: consentTemplate.getVersion().toNumber(),
+		title: consentTemplate.getTitle(),
+		text: consentTemplate.getText()};
+    var backURL=req.header('Referer') || '/';
+    res.render ('consenttemplate', { user : user, consentTemplate : item, backURL : backURL });
+});
+
+//
 // Consent actions
 //
 router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, res) {
@@ -127,6 +143,11 @@ router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
     }
     
     res.render ('listofactivetemplates', { user : user, consents : listOfTemplates });
+});
+
+router.get('/templateaction/:consentTemplateId/:action', loggedInUser, function (req, res) {
+    var user = req.user;
+    res.render ('newconsenttemplate', {user : user});    
 });
 
 //
