@@ -145,9 +145,24 @@ router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
     res.render ('listofactivetemplates', { user : user, consents : listOfTemplates });
 });
 
-router.get('/templateaction/:consentTemplateId/:action', loggedInUser, function (req, res) {
+router.get('/newtemplate/:consentTemplateId', loggedInUser, function (req, res) {
     var user = req.user;
-    res.render ('newconsenttemplate', {user : user});    
+    var version = 1;
+    if (req.params.consentTemplateId != 0) {
+	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+	version = consentTemplate.getVersion().toNumber() + 1;
+    }
+    var item = { purpouse: consentTemplate.getPurpouse(),
+		 locale: consentTemplate.getLanguageCountry(),
+		 version: version}
+    
+    res.render ('newtemplate', {user : user, item : item});    
+});
+
+router.post('/createnewtemplate', loggedInUser, function(req, res) {
+
+    console.log (req.body);
+    res.render('newtemplatecreated', { });
 });
 
 //

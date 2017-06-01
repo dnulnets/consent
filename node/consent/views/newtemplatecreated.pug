@@ -1,0 +1,15 @@
+extends layout
+include mixins
+
+block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "/list") List of consents
+      +nav_item( "/listofactivetemplates", "active" ) List of templates
+      +nav_item( "/listofalltemplates" ) Template history      
+      +nav_item( "/logout" ) Logout
+  .container-fluid
+    h1 Your newly created template is being processed
+    b Your request has been entered into the ledger and is being processed.
+    p
+    p It will therefore be some delay before your consent template is listed among active templates.
+    a(href="/listofactivetemplates",class="btn btn-danger") Return

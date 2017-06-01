@@ -1,0 +1,31 @@
+extends layout
+include mixins
+
+block content
+  +nav("Consent Handling", "dropdown_menu", "inverse")
+      +nav_item( "/list" ) List of consents
+      +nav_item( "/listofactivetemplates" ) List of templates
+      +nav_item( "/listofalltemplates" ) Template history      
+      +nav_item( "/logout" ) Logout
+  .container-fluid
+    h1 New Consent Template
+    form(role='form', action="/createnewtemplate",method="post", style='max-width: 800px;')
+      .form-group
+        label Purpouse
+          input.form-control(type='text', name="purpouse", value=item.purpouse, disabled)
+        b &nbsp;
+        label Locale
+          input.form-control(type='text', name="locale", value=item.locale, disabled)
+        b &nbsp;
+        label Version
+          input.form-control(type='text', name="version", value=item.version, disabled)
+      .form-group
+        label Title
+        input.form-control(type='text', name="title", placeholder='Enter title')
+      .form-group
+        label Description
+        textarea.form-control(rows="5", name="description", placeholder='Enter description')
+      button.btn.btn-default(type='submit') Submit
+      b &nbsp;
+      a(href='/listofactivetemplates')
+        button.btn.btn-primary(type="button") Cancel
