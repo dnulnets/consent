@@ -147,21 +147,24 @@ router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
 
 router.get('/newtemplate/:consentTemplateId', loggedInUser, function (req, res) {
     var user = req.user;
-    var version = 1;
+    var item = { purpouse: "",
+		 locale: "",
+		 version: 1};
+    
     if (req.params.consentTemplateId != 0) {
 	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
-	version = consentTemplate.getVersion().toNumber() + 1;
-    }
-    var item = { purpouse: consentTemplate.getPurpouse(),
+	item = { purpouse: consentTemplate.getPurpouse(),
 		 locale: consentTemplate.getLanguageCountry(),
-		 version: version}
+		 version: consentTemplate.getVersion().toNumber() + 1,
+	         readonly: true}
+    }
     
     res.render ('newtemplate', {user : user, item : item});    
 });
 
 router.post('/createnewtemplate', loggedInUser, function(req, res) {
 
-    console.log (req.body);
+    consentHandler.addConsentTemplate (req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
     res.render('newtemplatecreated', { });
 });
 
@@ -243,11 +246,30 @@ router.get('/logout', function(req, res) {
     res.redirect('/login');
 });
 
-router.get('/createconsent', function (req, res) {
-    console.log ("Router: Creating consent for " + req.user.username);
-    txhash = consentHandler.createConsent (req.user.consents, "VSCRAD", "no-SE");
-    console.log ("Router: Transaction hash = " + txhash);
-    res.redirect ('/list');
+router.get('/createconsent/:consentTemplateId', function (req, res) {
+    var user = req.user;
+    var users = [];
+    
+    // Get all users
+    Account.find({}, 'username consents').sort({username:1}).exec(function (err, lst) {
+	if (!err) {
+	    console.log (lst);
+	    users = lst;
+	}
+    });
+
+    console.log (users);
+    
+    // Get consent template contract
+    var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+    var item = {id: req.params.consentTemplateId,
+		purpouse: consentTemplate.getPurpouse(),
+		locale: consentTemplate.getLanguageCountry(),
+		version: consentTemplate.getVersion().toNumber(),
+		title: consentTemplate.getTitle(),
+		text: consentTemplate.getText()};
+    var backURL=req.header('Referer') || '/';
+    res.render ('createconsent', { user : user, consentTemplate : item, backURL : backURL, users : users });
 });
 
 module.exports = router;

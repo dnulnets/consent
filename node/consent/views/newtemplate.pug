@@ -12,16 +12,25 @@ block content
     form(role='form', action="/createnewtemplate",method="post", style='max-width: 800px;')
       .form-group
         label Purpouse
-          input.form-control(type='text', name="purpouse", value=item.purpouse, disabled)
+          if(item.readonly)
+            input.form-control(type='text', name="purpouse", value=item.purpouse, readonly)
+          if(!item.readonly)
+            input.form-control(type='text', name="purpouse", value=item.purpouse)
         b &nbsp;
         label Locale
-          input.form-control(type='text', name="locale", value=item.locale, disabled)
+          if(item.readonly)
+            input.form-control(type='text', name="locale", value=item.locale, readonly)
+          if(!item.readonly)
+            input.form-control(type='text', name="locale", value=item.locale)
         b &nbsp;
         label Version
-          input.form-control(type='text', name="version", value=item.version, disabled)
+          if(item.readonly)
+            input.form-control(type='text', name="version", value=item.version, readonly)
+          if(!item.readonly)
+            input.form-control(type='text', name="version", value=item.version)
       .form-group
         label Title
-        input.form-control(type='text', name="title", placeholder='Enter title')
+          input.form-control(type='text', name="title", placeholder='Enter title')
       .form-group
         label Description
         textarea.form-control(rows="5", name="description", placeholder='Enter description')
