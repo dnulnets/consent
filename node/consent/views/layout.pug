@@ -7,7 +7,7 @@ html
     link(href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css', rel='stylesheet', media='screen')
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
-    +nav("Consent Handling", "dropdown_menu", "inverse")
+    +nav("Consent Handling", "dropdown_menu")
       if (!user)
         +nav_item( "/login" ) Login
         +nav_item( "/register" ) Register
