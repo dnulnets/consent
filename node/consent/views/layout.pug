@@ -1,3 +1,4 @@
+include mixins
 doctype html
 html
   head
@@ -6,6 +7,17 @@ html
     link(href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css', rel='stylesheet', media='screen')
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
+    +nav("Consent Handling", "dropdown_menu", "inverse")
+      if (!user)
+        +nav_item( "/login" ) Login
+        +nav_item( "/register" ) Register
+      if (user)
+        if(user.role === 'user')
+          +nav_item( "/list" ) List of consents
+        if(user.role === 'admin')
+          +nav_item( "/listofactivetemplates" ) List of templates
+          +nav_item( "/listofalltemplates") Template history
+        +nav_item( "/logout" ) Logout
     block content
 
   script(src='https://code.jquery.com/jquery.js')

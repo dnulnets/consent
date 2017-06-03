@@ -116,7 +116,7 @@ passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
 // MongoDB configuration
-mongoose.Primse = bluebird;
+mongoose.Promise = bluebird;
 mongoose.connect('mongodb://localhost/consent');
 
 // Catch 404 and forward to error handler
@@ -128,13 +128,10 @@ app.use(function(req, res, next) {
 
 // Error handler
 app.use(function(err, req, res, next) {
-  // Set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    res.locals.message = err.message;
+    res.locals.error = err;
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 // Export the app

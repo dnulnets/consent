@@ -1,12 +1,6 @@
 extends layout
-include mixins
 
 block content
-  +nav("Consent Handling", "dropdown_menu", "inverse")
-      +nav_item( "/list" ) List of consents
-      +nav_item( "/listofactivetemplates" ) List of templates
-      +nav_item( "/listofalltemplates" ) Template history
-      +nav_item( "/logout" ) Logout
   .container-fluid
     h1 New Consent Template
     form(role='form', action="/createnewtemplate",method="post", style='max-width: 800px;')
@@ -24,10 +18,7 @@ block content
             input.form-control(type='text', name="locale", value=item.locale)
         b &nbsp;
         label Version
-          if(item.readonly)
-            input.form-control(type='text', name="version", value=item.version, readonly)
-          if(!item.readonly)
-            input.form-control(type='text', name="version", value=item.version)
+          input.form-control(type='text', name="version", value=item.version, readonly)
       .form-group
         label Title
           input.form-control(type='text', name="title", placeholder='Enter title')

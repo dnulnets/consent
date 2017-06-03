@@ -1,20 +1,9 @@
 extends layout
-include mixins
 
 block content
-  +nav("Consent Handling", "dropdown_menu", "inverse")
-    if (!user)
-      +nav_item( "/login" ) Login
-      +nav_item( "/register" ) Register
-    if (user)
-      +nav_item( "/list" ) List of consents
-      +nav_item( "/listofactivetemplates" ) List of templates
-      +nav_item( "/listofalltemplates") Template history
-      +nav_item( "/logout" ) Logout
   .container-fluid
     h1 Consent
     b When one person voluntarily agrees to the proposal or desires of another.
     p
     p This is a common use case when a company wants to perform processing of information collected from a person for a specific purpouse. For example: If a company collects data on a persons usage of a product with the intention of using that data to perform product improvements based on that data, the company needs to have a consent.
     p One solution to this is to provide consent handling through contracts on an ethereum blockchain. That is what this prototype demonstrates.
-    

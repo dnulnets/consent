@@ -2,12 +2,6 @@ extends layout
 include mixins
 
 block content
-  +nav("Consent Handling", "dropdown_menu", "inverse")
-    if (!user)
-      +nav_item( "login" ) Login
-      +nav_item( "register", "active" ) Register
-    if (user)
-      +nav_item( "logout" ) Logout
   .container-fluid
     p.lead Once you have registered a username you will get a blockchain account and a personal consent file that allows you to manage all of your consents.
     br

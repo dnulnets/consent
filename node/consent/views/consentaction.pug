@@ -1,12 +1,6 @@
 extends layout
-include mixins
 
 block content
-  +nav("Consent Handling", "dropdown_menu", "inverse")
-      +nav_item( "/list", "active" ) List of consents
-      +nav_item( "/listofactivetemplates" ) List of templates
-      +nav_item( "/listofalltemplates" ) Template history      
-      +nav_item( "/logout" ) Logout
   .container-fluid
     h1 Your decision to #{action} the consent is being processed
     b Your request has been entered into the ledger and is being processed.

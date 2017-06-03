@@ -19,23 +19,28 @@ var statusString = ["Denied","Accepted","Requested","","Cancelled"];
 var statusActionString = ["deny", "accept", "request", "cancel"];
 
 //
-// Check if the user is logged in
+// Check if the user is logged in and is a user
 //
 function loggedInUser(req, res, next) {
     if (req.user) {
-        next();
+	if (req.user.role === 'user')
+            next();
+	else
+	    res.redirect('/unauthorized');
     } else {
         res.redirect('/login');
     }
 }
 
 //
-// Check if the administrator is logged in
+// Check if the user is logged in an is an administrator
 //
 function loggedInAdmin(req, res, next) {
     if (req.user) {
-	if (req.user.username === "admin")
+	if (req.user.role === "admin")
             next();
+	else
+	    res.redirect('/unauthorized');
     } else {
         res.redirect('/login');
     }
@@ -47,6 +52,14 @@ function loggedInAdmin(req, res, next) {
 router.get('/', function (req, res) {
     res.render('index', { user : req.user });
 });
+
+//
+// Unauthorized page
+//
+router.get('/unauthorized', function (req, res) {
+    res.render('unauthorized', {});
+});
+
 
 //
 // Provides a list of consents for a specific user. The user has to be logged in.
@@ -96,7 +109,7 @@ router.get ('/consent/:consentId', loggedInUser, function (req, res) {
 //
 // View a specific consent template
 //
-router.get ('/consenttemplate/:consentTemplateId', loggedInUser, function (req, res) {
+router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req, res) {
     var user = req.user;
     var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
     var item = {id: req.params.consentTemplateId,
@@ -122,7 +135,7 @@ router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, re
 //
 // /listactivetemplates
 //
-router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
+router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
     
     var listOfTemplates = [];
     
@@ -145,7 +158,7 @@ router.get ('/listofactivetemplates', loggedInUser, function (req, res) {
     res.render ('listofactivetemplates', { user : user, consents : listOfTemplates });
 });
 
-router.get('/newtemplate/:consentTemplateId', loggedInUser, function (req, res) {
+router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res) {
     var user = req.user;
     var item = { purpouse: "",
 		 locale: "",
@@ -162,16 +175,16 @@ router.get('/newtemplate/:consentTemplateId', loggedInUser, function (req, res) 
     res.render ('newtemplate', {user : user, item : item});    
 });
 
-router.post('/createnewtemplate', loggedInUser, function(req, res) {
-
+router.post('/createnewtemplate', loggedInAdmin, function(req, res) {
+    var user = req.user;
     consentHandler.addConsentTemplate (req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
-    res.render('newtemplatecreated', { });
+    res.render('newtemplatecreated', { user : user });
 });
 
 //
 // /listalltemplates
 //
-router.get ('/listofalltemplates', loggedInUser, function (req, res) {
+router.get ('/listofalltemplates', loggedInAdmin, function (req, res) {
     
     var listOfTemplates = [];
     
@@ -234,8 +247,15 @@ router.get('/login', function(req, res) {
     res.render('login', { user : req.user });
 });
 
-router.post('/login', passport.authenticate('local'), function(req, res) {
-    res.redirect('/list');
+router.get('/loginfail', function(req, res) {
+    res.render('loginfail', { user : req.user });
+});
+
+router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfail' }), function(req, res) {
+    if (req.user.role === 'user')
+	res.redirect('/list');
+    else
+	res.redirect('/listofactivetemplates');
 });
 
 //
@@ -249,12 +269,12 @@ router.get('/logout', function(req, res) {
 //
 // Create a new consent get and post
 //
-router.get('/createconsent/:consentTemplateId', function (req, res) {
+router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, res) {
     var user = req.user;
     var users = [];
     
     // Get all users
-    Account.find({}, 'username consents').sort({username:1}).exec().then(function (lst) {
+    Account.find({role : 'user'}, 'username consents').sort({username:1}).exec().then(function (lst) {
 	
 	// Get consent template contract
 	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
@@ -275,12 +295,10 @@ router.get('/createconsent/:consentTemplateId', function (req, res) {
     });
 });
 
-router.post('/createconsent', function (req, res) {
-
-    console.log (req.body);
-    txhash = consentHandler.createConsent (req.body.consents, req.body.purpouse, req.body.locale);
-    console.log ('Consent created for user');
-    res.render ('createconsentdone');
+router.post('/createconsent', loggedInAdmin, function (req, res) {
+    var user = req.user;
+    consentHandler.createConsent (req.body.consents, req.body.purpouse, req.body.locale);
+    res.render ('createconsentdone', {user : user});
 });
 
 module.exports = router;
