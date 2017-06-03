@@ -195,7 +195,7 @@ router.get ('/listofalltemplates', loggedInUser, function (req, res) {
 });
 
 //
-// /register
+// /register get and post
 //
 router.get('/register', function(req, res) {
     res.render('register', { });
@@ -205,8 +205,8 @@ router.post('/register', function(req, res) {
 
     // Create a blockchain account for this user. Is this how we really should do it???
     var id = consentHandler.newAccount (req.body.password);
-    console.log ("Router: Blockchain id for user " + req.body.username + " got account " + id);
-    Account.register(new Account({ username : req.body.username, coinbase : id }), req.body.password, function(err, account) {
+    console.log ("Router: Blockchain id for user " + req.body.username + "role " + req.body.role + " got account " + id);
+    Account.register(new Account({ username : req.body.username, coinbase : id, role : req.body.role }), req.body.password, function(err, account) {
 
 	// Was it succesfull?
         if (err) {
@@ -228,7 +228,7 @@ router.post('/register', function(req, res) {
 });
 
 //
-// /login
+// /login get and post functions
 //
 router.get('/login', function(req, res) {
     res.render('login', { user : req.user });
@@ -246,30 +246,41 @@ router.get('/logout', function(req, res) {
     res.redirect('/login');
 });
 
+//
+// Create a new consent get and post
+//
 router.get('/createconsent/:consentTemplateId', function (req, res) {
     var user = req.user;
     var users = [];
     
     // Get all users
-    Account.find({}, 'username consents').sort({username:1}).exec(function (err, lst) {
-	if (!err) {
-	    console.log (lst);
-	    users = lst;
-	}
-    });
+    Account.find({}, 'username consents').sort({username:1}).exec().then(function (lst) {
+	
+	// Get consent template contract
+	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+	var item = {id: req.params.consentTemplateId,
+		    purpouse: consentTemplate.getPurpouse(),
+		    locale: consentTemplate.getLanguageCountry(),
+		    version: consentTemplate.getVersion().toNumber(),
+		    title: consentTemplate.getTitle(),
+		    text: consentTemplate.getText()};
+	var backURL=req.header('Referer') || '/';
+	res.render ('createconsent', { user : user, consentTemplate : item, backURL : backURL, users : lst });
+	
+    }).catch (function (err) {
 
-    console.log (users);
-    
-    // Get consent template contract
-    var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
-    var item = {id: req.params.consentTemplateId,
-		purpouse: consentTemplate.getPurpouse(),
-		locale: consentTemplate.getLanguageCountry(),
-		version: consentTemplate.getVersion().toNumber(),
-		title: consentTemplate.getTitle(),
-		text: consentTemplate.getText()};
-    var backURL=req.header('Referer') || '/';
-    res.render ('createconsent', { user : user, consentTemplate : item, backURL : backURL, users : users });
+	console.log (err);
+	res.render('error', {error : err});
+	
+    });
+});
+
+router.post('/createconsent', function (req, res) {
+
+    console.log (req.body);
+    txhash = consentHandler.createConsent (req.body.consents, req.body.purpouse, req.body.locale);
+    console.log ('Consent created for user');
+    res.render ('createconsentdone');
 });
 
 module.exports = router;

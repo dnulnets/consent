@@ -15,6 +15,11 @@ block content
       .form-group
           input.form-control(type='text', name="username", placeholder='Enter Username')
       .form-group
+          label(for="sel1") Role
+          select.selectpicker.form-control(name="role", id="sel1")
+            option(value="user") User
+            option(value="admin") Administrator
+      .form-group
         input.form-control(type='password', name="password", placeholder='Password')
       button.btn.btn-default(type='submit') Submit
       b &nbsp;

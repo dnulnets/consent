@@ -17,6 +17,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var Account = require('./models/account');
 var util = require('util');
+var bluebird = require ('bluebird');
 
 //
 // Own developed requirements
@@ -115,6 +116,7 @@ passport.serializeUser(Account.serializeUser());
 passport.deserializeUser(Account.deserializeUser());
 
 // MongoDB configuration
+mongoose.Primse = bluebird;
 mongoose.connect('mongodb://localhost/consent');
 
 // Catch 404 and forward to error handler
