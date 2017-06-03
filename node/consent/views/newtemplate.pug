@@ -3,7 +3,7 @@ extends layout
 block content
   .container-fluid
     h1 New Consent Template
-    form(role='form', action="/createnewtemplate",method="post", style='max-width: 800px;')
+    form(role='form', action="/newtemplate",method="post", style='max-width: 800px;')
       .form-group
         label Purpouse
           if(item.readonly)

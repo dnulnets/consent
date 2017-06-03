@@ -175,10 +175,10 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
     res.render ('newtemplate', {user : user, item : item});    
 });
 
-router.post('/createnewtemplate', loggedInAdmin, function(req, res) {
+router.post('/newtemplate', loggedInAdmin, function(req, res) {
     var user = req.user;
     consentHandler.addConsentTemplate (req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
-    res.render('newtemplatecreated', { user : user });
+    res.render('newtemplatedone', { user : user });
 });
 
 //
