@@ -47,7 +47,6 @@ A couple of node javascripts and a genesis file to setup the ethereum blockchain
 ## What needs to be done
 
 This is just a few items that needs to be sorted out:
-- Develop a GUI for the consent handling for both users and companies. (ongoing)
 - How to handle integrity, i.e. wether or not a person has agreed or not is considered personal data. Maybe even the consent in itself.
 - Is PoA the way to go, and if so who is the Authority in this case?
 - Identity and proof of identity of the person is needed in the end.
