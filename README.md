@@ -32,6 +32,8 @@ A set of contracts written in Solidity that gives a web application the possibli
 
 The blockchain has four contracts.
 
+[[doc/model.gif]]
+
 - ConsentFactory - A contract that is created for a company that allows the company to manage consent templates, generate new consents and add them to a users consent file.
 
 - ConsentFile - A file that contains all the consents that have been offered to a specific user by the companies.
