@@ -4,7 +4,20 @@ pragma solidity ^0.4.11;
  * This file contains a set of contracts used to handle consents between a company
  * and a person.
  *
- * Copyright (c) 2017, Tomas Stenlund, All rights reserved
+ * Copyright 2017 Tomas Stenlund
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 /*
@@ -14,8 +27,6 @@ pragma solidity ^0.4.11;
  *
  * It basically provides a textual description of the consent.
  *
- * Copyright (c) 2017, Tomas Stenlund, All rights reserved
- *
  */
 contract ConsentTemplate {
 
@@ -24,7 +35,7 @@ contract ConsentTemplate {
   uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
   string  private title;        /* The title of the consent */
   string  private text;         /* The text that describes the purpouse of the consent */
-  string  private languageCountry;       /* The language and country the consent template that it is valid for
+  string  private languageCountry;       /* The language and country the consent template is valid for.
 					  *
 					  * Standard country-language code according to ISO 639 and ISO 3166-1 alpha 2
 					  * separated by a dash, so for swedish in Sweden it is "sv-SE" */
@@ -40,7 +51,7 @@ contract ConsentTemplate {
     languageCountry = _languageCountry;
   }
 
-  /* Getters for the contract */
+  /* Set of getters for the contract */
   function getVersion () constant returns (uint16)
   {
     return version;
@@ -73,8 +84,6 @@ contract ConsentTemplate {
  *
  * It basically provides a textual description  that is either accepted or denied by a user.
  *
- * Copyright (c) 2017, Tomas Stenlund, All rights reserved
- *
  */
 contract Consent {
 
@@ -93,6 +102,13 @@ contract Consent {
   
   /* Event to signal that the status has changed */
   event ConsentStatusChanged (address indexed owner, address indexed giver, address consent, Status status);
+
+  /* A modifier */
+  modifier onlyBy(address _account)
+  {
+    require(msg.sender == _account);
+    _;
+  }
   
   /* This function is executed at initialization and sets the owner and the giver of the consent */
   /* as well as what it contains */
@@ -104,18 +120,20 @@ contract Consent {
     status = Status.requested;
   }
 
-  /* Sets the status of the consent, this can only be done by the giver. Should have a modifier for that. */
-  function setStatus(Status _status)
+  /* Sets the status of the consent, this can only be done by the giver. */
+  function setStatus(Status _status) onlyBy (giver)
   {
-    status = _status;
-    ConsentStatusChanged (owner, giver, this, _status);    
+    if (_status == Status.denied || _status == Status.accepted) {
+      status = _status;
+      ConsentStatusChanged (owner, giver, this, _status);
+    }
   }
 
-  /* Cancels a consent, this can only be done by the company who created the consent. Should have a modifier for that. */
-  function cancelConsent ()
+  /* Cancels a consent, this can only be done by the company who created the consent. */
+  function cancelConsent () onlyBy (owner)
   {
     status = Status.cancelled;
-    ConsentStatusChanged (owner, giver, this, Status.cancelled);    
+    ConsentStatusChanged (owner, giver, this, Status.cancelled);
   }
   
   /* Returns the status of the consent */    
@@ -139,8 +157,6 @@ contract Consent {
  *
  * This contains a list of consents that a specific user has been
  * offered. Regardless if it is deined, approved or has no decision.
- *
- * Copyright (c) 2017, Tomas Stenlund, All rights reserved
  *
  */
 contract ConsentFile {
@@ -189,8 +205,6 @@ contract ConsentFile {
  * a specific purpouse for a specific user. And always using the latest version
  * and always puts newly generated consents into a persons consent file.
  *
- * Copyright (c) 2017, Tomas Stenlund, All rights reserved
- *
  */
 contract ConsentFactory {
 
@@ -220,7 +234,7 @@ contract ConsentFactory {
     owner = msg.sender;
   }
 
-  /* Adds a consent template to the factory to be used for consent generation. */
+  /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
   function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry)    
   {
     /* Add the template for the specific language, country and purpouse */
@@ -248,9 +262,9 @@ contract ConsentFactory {
     return listOfAllConsentTemplates;
   }
   
-  /* Create a file that holds a users all consents
+  /* Create a file that holds a users all consents.
    * 
-   * This is the file that holds all consents regardless of their state.
+   * This is the file that holds all consents regardless of their state. Should have a modifier for the company.
    */
   function createConsentFile (address _user)
   {
@@ -262,7 +276,7 @@ contract ConsentFactory {
    *
    * Country and Purpouse must exist otherwise it will fail, if language is not there it will
    * default to countrys default language if it exists otherwise it will fail. It adds
-   * the consent to the users file as well.
+   * the consent to the users file as well. Should have a modifier for the company only.
    */
   function createConsent (address _file, string _purpouse, string _languageCountry)
   {
@@ -280,13 +294,6 @@ contract ConsentFactory {
     ConsentFactoryFailedEvent(owner, cf.getOwner(), Error.no_such_template);
       
     }
-  }
-
-  /* This function checks to see that there is a consent to be generated */
-  function hasConsent (string _purpouse, string _languageCountry) constant returns (bool)
-  {
-    ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);
-    return (ct != address(0));
   }
   
   /* This function tests wether a consent for a specific purpouse exists or not */
@@ -317,7 +324,7 @@ contract ConsentFactory {
     else
       return ConsentTemplate(address(0));
   }
-  
+    
   /* Function to recover the funds on the contract */
   function kill() { if (msg.sender == owner) selfdestruct(owner); }
 }

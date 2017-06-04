@@ -141,7 +141,7 @@ router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req,
 router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, res) {
     var user = req.user;
     var consent = consentHandler.consentContract.at(req.params.consentId);
-    consent.setStatus (req.params.action);  
+    consent.setStatus.sendTransaction (req.params.action, {from: user.coinbase, gas: 50000});  
     res.render ('consentaction', {user : user, action : statusActionString[req.params.action]});
 });
 
@@ -265,10 +265,16 @@ router.get('/loginfail', function(req, res) {
 });
 
 router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfail' }), function(req, res) {
+
+    // We need to unlock the coinbase for the user
+    console.log ("Unlock = " + consentHandler.unlockAccount(req.user.coinbase, req.body.password));
+		 
+    // Redirect us to the correct place depending on role
     if (req.user.role === 'user')
 	res.redirect('/list');
     else
 	res.redirect('/listofactivetemplates');
+    
 });
 
 //
