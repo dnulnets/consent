@@ -52,27 +52,27 @@ contract ConsentTemplate {
   }
 
   /* Set of getters for the contract */
-  function getVersion () constant returns (uint16)
+  function getVersion () public constant returns (uint16)
   {
     return version;
   }
 
-  function getTitle () constant returns (string)
+  function getTitle () public constant returns (string)
   {
     return title;
   }
 
-  function getPurpouse () constant returns (string)
+  function getPurpouse () public constant returns (string)
   {
     return purpouse;
   }
   
-  function getText () constant returns (string)
+  function getText () public constant returns (string)
   {
     return text;
   }
 
-  function getLanguageCountry () constant returns (string)
+  function getLanguageCountry () public constant returns (string)
   {
     return languageCountry;
   }
@@ -121,7 +121,7 @@ contract Consent {
   }
 
   /* Sets the status of the consent, this can only be done by the giver. */
-  function setStatus(Status _status) onlyBy (giver)
+  function setStatus(Status _status) onlyBy (giver) public
   {
     if (_status == Status.denied || _status == Status.accepted) {
       status = _status;
@@ -130,20 +130,20 @@ contract Consent {
   }
 
   /* Cancels a consent, this can only be done by the company who created the consent. */
-  function cancelConsent () onlyBy (owner)
+  function cancelConsent () onlyBy (owner) public
   {
     status = Status.cancelled;
     ConsentStatusChanged (owner, giver, this, Status.cancelled);
   }
   
   /* Returns the status of the consent */    
-  function getStatus() constant returns (Status)
+  function getStatus() public constant returns (Status)
   {
     return status;
   }
 
   /* Returns the consent template that this consent is based on */
-  function getTemplate() constant returns (ConsentTemplate)
+  function getTemplate() public constant returns (ConsentTemplate)
   {
     return ConsentTemplate(consentTemplate);
   }
@@ -171,26 +171,26 @@ contract ConsentFile {
   event ConsentFileConsentAdded (address indexed user, address consent);
   
   /* The constructor of the file. Also attaches it to an owner */
-  function ConsentFile (address _owner)
+  function ConsentFile (address _owner) public
   {
     owner = _owner;
   }
 
   /* Adds a new consent to the file */
-  function addConsent (address _consent)
+  function addConsent (address _consent) public
   {
     listOfConsents.push (_consent);
     ConsentFileConsentAdded (owner,  _consent);
   }
 
   /* Retrieve a list of all consents in the file */
-  function getListOfConsents () constant returns (address[])
+  function getListOfConsents () public constant returns (address[])
   {
     return listOfConsents;
   }
 
   /* Retrieves the owner */
-  function getOwner () constant returns (address)
+  function getOwner () public constant returns (address)
   {
     return owner;
   }
@@ -228,6 +228,13 @@ contract ConsentFactory {
   event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
   event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, address template);
 
+  /* A modifier */
+  modifier onlyBy(address _account)
+  {
+    require(msg.sender == _account);
+    _;
+  }
+  
   /* Constructor for the consent factory */
   function ConsentFactory() public
   { 
@@ -235,7 +242,7 @@ contract ConsentFactory {
   }
 
   /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
-  function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry)    
+  function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) onlyBy (owner) public
   {
     /* Add the template for the specific language, country and purpouse */
     uint ix = consentTemplates[_purpouse][_languageCountry];
@@ -251,13 +258,13 @@ contract ConsentFactory {
   }
 
   /* Returns with a list of active consent templates */
-  function getActiveConsentTemplates() constant returns (address[])
+  function getActiveConsentTemplates() onlyBy (owner) public constant returns (address[])
   {
     return listOfActiveConsentTemplates;
   }
   
   /* Returns with a list of all consent templates */
-  function getAllConsentTemplates() constant returns (address[])
+  function getAllConsentTemplates() onlyBy (owner) public constant returns (address[])
   {
     return listOfAllConsentTemplates;
   }
@@ -266,7 +273,7 @@ contract ConsentFactory {
    * 
    * This is the file that holds all consents regardless of their state. Should have a modifier for the company.
    */
-  function createConsentFile (address _user)
+  function createConsentFile (address _user) onlyBy (owner) public
   {
     address file = new ConsentFile (_user);
     ConsentFactoryFileCreatedEvent(owner, _user, file);
@@ -278,7 +285,7 @@ contract ConsentFactory {
    * default to countrys default language if it exists otherwise it will fail. It adds
    * the consent to the users file as well. Should have a modifier for the company only.
    */
-  function createConsent (address _file, string _purpouse, string _languageCountry)
+  function createConsent (address _file, string _purpouse, string _languageCountry) onlyBy (owner) public
   {
     ConsentFile cf = ConsentFile (_file);
     ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);

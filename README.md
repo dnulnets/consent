@@ -49,6 +49,7 @@ A couple of node javascripts and a genesis file to setup the ethereum blockchain
 ## What needs to be done
 
 This is just a few items that needs to be sorted out:
+- Amount of ether is transferred to the users account but need to find some better way. I would like to have a 3rd party pay the gas.
 - How to handle integrity, i.e. wether or not a person has agreed or not is considered personal data. Maybe even the consent in itself.
 - Is PoA the way to go, and if so who is the Authority in this case?
 - Identity and proof of identity of the person is needed in the end.

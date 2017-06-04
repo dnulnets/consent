@@ -92,7 +92,7 @@ ConsentHandler.prototype.newAccount = function (password)
 {
     var account = this.web3.personal.newAccount (password);
     console.log ("ConsentHandler: New account created = " + account);
-    var tx = this.web3.eth.sendTransaction({from: this.account, to: account, value: 4000000});
+    var tx = this.web3.eth.sendTransaction({from: this.account, to: account, value: this.web3.toWei('1', 'ether')});
     console.log ("ConsentHandler: Sending ether to the new account ");
     return account;
 }
