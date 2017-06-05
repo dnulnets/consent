@@ -54,7 +54,8 @@ var event = consentHandler.allEventsHandler (function (err,res) {
 	// This is where we store all consents.
 	//
 	if (event == 'ConsentFactoryFileCreatedEvent') {
-	    
+
+	    console.log ("Application: Handled event = " + event + "(" + util.inspect(args) + ")");	    
 	    console.log ("Application: Consent file for account " + args.user + " has been mined");
 	    console.log ("Application: Consent file has address " + args.file);
 	    Account.findOne({

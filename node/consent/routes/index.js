@@ -140,8 +140,10 @@ router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req,
 //
 router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, res) {
     var user = req.user;
-    var consent = consentHandler.consentContract.at(req.params.consentId);
-    consent.setStatus.sendTransaction (req.params.action, {from: user.coinbase, gas: 50000});  
+    txHash = consentHandler.consentFactory.setConsentStatus.sendTransaction (req.params.consentId,
+									     req.params.action,
+									     {from: user.coinbase, gas: 50000});
+    console.log ("Transaction = " + txHash);
     res.render ('consentaction', {user : user, action : statusActionString[req.params.action]});
 });
 
@@ -236,6 +238,7 @@ router.post('/register', function(req, res) {
 
 	// Was it succesfull?
         if (err) {
+	    console.log ("Router: Failed to create user " + err);
             return res.render('register', { account : account });
         }
 

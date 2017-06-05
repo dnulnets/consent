@@ -32,7 +32,7 @@ contract ConsentTemplate {
 
   address private owner;        /* The owner of the template */
   string  private purpouse;     /* What purpouse the template is for */ 
-  uint16  private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
+  uint    private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
   string  private title;        /* The title of the consent */
   string  private text;         /* The text that describes the purpouse of the consent */
   string  private languageCountry;       /* The language and country the consent template is valid for.
@@ -41,9 +41,9 @@ contract ConsentTemplate {
 					  * separated by a dash, so for swedish in Sweden it is "sv-SE" */
 
   /* Creates the contract and set the values of the contract. */
-  function ConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) public
+  function ConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
   {
-    owner = msg.sender;
+    owner = tx.origin;
     purpouse = _purpouse;
     version = _version;
     title = _title;
@@ -52,7 +52,7 @@ contract ConsentTemplate {
   }
 
   /* Set of getters for the contract */
-  function getVersion () public constant returns (uint16)
+  function getVersion () public constant returns (uint)
   {
     return version;
   }
@@ -106,7 +106,7 @@ contract Consent {
   /* A modifier */
   modifier onlyBy(address _account)
   {
-    require(msg.sender == _account);
+    require(tx.origin == _account);
     _;
   }
   
@@ -115,7 +115,7 @@ contract Consent {
   function Consent(address _giver, address _consentTemplate) public
   {
     giver = _giver;
-    owner = msg.sender;
+    owner = tx.origin;
     consentTemplate = _consentTemplate;
     status = Status.requested;
   }
@@ -130,7 +130,7 @@ contract Consent {
   }
 
   /* Cancels a consent, this can only be done by the company who created the consent. */
-  function cancelConsent () onlyBy (owner) public
+  function cancel () onlyBy (owner) public
   {
     status = Status.cancelled;
     ConsentStatusChanged (owner, giver, this, Status.cancelled);
@@ -147,9 +147,21 @@ contract Consent {
   {
     return ConsentTemplate(consentTemplate);
   }
+
+  /* Returns with teh giver */
+  function getGiver() public constant returns (address)
+  {
+    return giver;
+  }
+  
+  /* Returns with teh giver */
+  function getOwner() public constant returns (address)
+  {
+    return owner;
+  }
   
   /* Function to recover the funds on the contract */
-  function kill() { if (msg.sender == owner) selfdestruct(owner); }
+  function kill() { if (tx.origin == owner) selfdestruct(owner); }
 }
 
 /*
@@ -209,7 +221,8 @@ contract ConsentFile {
 contract ConsentFactory {
 
   /* Enumeration for errors */
-  enum Error {no_such_template /* If no such template exists for the purpouse, language and country */
+  enum Error {no_such_template, /* If no such template exists for the purpouse, language and country */
+	      only_accepted_or_denied /* Tried to set wrong status on consent */
   }
   
   /* The owner of this contract */
@@ -226,23 +239,24 @@ contract ConsentFactory {
   event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address indexed file, address consent);
   event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
   event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
-  event ConsentFactoryTemplateAdded (address indexed owner, address indexed factory, address template);
-
+  event ConsentFactoryTemplateAddedEvent (address indexed owner, address indexed factory, address template);
+  event ConsentFactoryConsentStatusChangedEvent (Consent consent, Consent.Status status);
+  
   /* A modifier */
   modifier onlyBy(address _account)
   {
-    require(msg.sender == _account);
+    require(tx.origin == _account);
     _;
   }
   
   /* Constructor for the consent factory */
   function ConsentFactory() public
   { 
-    owner = msg.sender;
+    owner = tx.origin;
   }
 
   /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
-  function addConsentTemplate (string _purpouse, uint16 _version, string _title, string _text, string _languageCountry) onlyBy (owner) public
+  function addConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) onlyBy (owner) public
   {
     /* Add the template for the specific language, country and purpouse */
     uint ix = consentTemplates[_purpouse][_languageCountry];
@@ -254,7 +268,7 @@ contract ConsentFactory {
       listOfActiveConsentTemplates[ix-1] = ct;
     }
     listOfAllConsentTemplates.push(ct);
-    ConsentFactoryTemplateAdded (owner, this, ct);    
+    ConsentFactoryTemplateAddedEvent (owner, this, ct);    
   }
 
   /* Returns with a list of active consent templates */
@@ -331,7 +345,25 @@ contract ConsentFactory {
     else
       return ConsentTemplate(address(0));
   }
-    
+
+  /* Change the status of the consent */
+  function setConsentStatus(Consent _consent, Consent.Status _status) onlyBy (_consent.getGiver()) public
+  {
+    if(_status == Consent.Status.accepted || _status == Consent.Status.denied) {
+      _consent.setStatus (_status);
+      ConsentFactoryConsentStatusChangedEvent (_consent, _status);
+    } else {
+      ConsentFactoryFailedEvent (_consent.getOwner(), _consent.getGiver(), Error.only_accepted_or_denied);
+    }
+  }
+  
+  /* Cancel the consent */
+  function cancelConsent(Consent _consent) onlyBy (_consent.getOwner()) public
+  {
+    _consent.cancel();
+    ConsentFactoryConsentStatusChangedEvent (_consent, Consent.Status.cancelled);
+  }
+  
   /* Function to recover the funds on the contract */
   function kill() { if (msg.sender == owner) selfdestruct(owner); }
 }
