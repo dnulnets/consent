@@ -49,11 +49,10 @@ A couple of node javascripts and a genesis file to setup the ethereum blockchain
 ## What needs to be done
 
 This is just a few items that needs to be sorted out:
-- Amount of ether is transferred to the users account but need to find some better way. I would like to have a 3rd party pay the gas.
-- How to handle integrity, i.e. wether or not a person has agreed or not is considered personal data. Maybe even the consent in itself.
+- Is it the right way to go to create an account for each user? Then they have to pay gas for the accept/deny operation of the consent. Since ethereum do not support 3rd party paying we must transfer funds to the user. Need to discuss good solution.
+- How to handle integrity. Wether or not a person has agreed or not is considered personal data and henec cannot be visible on a public blockchain.
 - Is PoA the way to go, and if so who is the Authority in this case?
 - Identity and proof of identity of the person is needed in the end.
-- Signature, how to handle that on the consents or is it enough as it is?
+- Signature, how to handle that on the consents or is it enough as it is, i.e. accepted or denied via contract from the userss account?
 - Better authentication, 2FA.
 - The consent model is that really the way to go? What to put in the blockchain and what to put in the mongo database. Need disucssion!
-
