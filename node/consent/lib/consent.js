@@ -76,6 +76,7 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     if (consentFactory !== 'undefined') {
 	console.log ("ConsentHandler: Using consent factory at " + consentFactory);
 	this.consentFactory = this.consentFactoryContract.at (consentFactory);
+	this.factory = consentFactory;
     } else {
 	console.log ("ConsentHandler: Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
     }

@@ -2,6 +2,29 @@ extends layout
 
 block content
   .container-fluid
+    h1 Your information
+    div
+      table.table.table-hover
+        thead
+          tr
+            th Field
+            th Value
+        tbody
+          tr
+            td Admin Ethereum Account
+            td= user.coinbase
+          tr
+            td Admin Ethereum Account balance [ether]
+            td= balance
+          tr
+            td System Ethereum Account
+            td= coinbase
+          tr
+            td System Ethereum Account balance [ether]
+            td= coinbaseBalance
+          tr
+            td System Consent factory
+            td= factory
     h1 Your active templates
     div
       table.table.table-hover

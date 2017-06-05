@@ -100,7 +100,9 @@ router.get ('/list', loggedInUser, function (req, res) {
 	}
     }
     
-    res.render ('list', { user : user, consents : listOfConsents });
+    balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
+    
+    res.render ('list', { user : user, consents : listOfConsents, balance : balance });
 });
 
 //
@@ -183,8 +185,11 @@ router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
 		    title: consentTemplate.getTitle()};
 	listOfTemplates.push(item);
     }
-    
-    res.render ('listofactivetemplates', { user : user, consents : listOfTemplates });
+
+    var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
+    var coinbaseBalance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(consentHandler.account), "ether");
+
+    res.render ('listofactivetemplates', { user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, coinbaseBalance : coinbaseBalance, factory : consentHandler.factory });
 });
 
 router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res) {

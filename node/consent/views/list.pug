@@ -2,6 +2,23 @@ extends layout
 
 block content
   .container-fluid
+    h1 Your information
+    div
+      table.table.table-hover
+        thead
+          tr
+            th Field
+            th Value
+        tbody
+          tr
+            td User Ethereum Account
+            td= user.coinbase
+          tr
+            td User Ethereum Account balance [ether]
+            td= balance
+          tr
+            td User Consent File
+            td= user.consents
     h1 Your consents
     div
       table.table.table-hover
