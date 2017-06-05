@@ -143,7 +143,21 @@ router.get ('/consentaction/:consentId/:action', loggedInUser, function (req, re
     txHash = consentHandler.consentFactory.setConsentStatus.sendTransaction (req.params.consentId,
 									     req.params.action,
 									     {from: user.coinbase, gas: 50000});
-    console.log ("Transaction = " + txHash);
+    consentHandler.awaitBlockConsensus ([consentHandler.web3], txHash, 3, 60, function(err, receipt)
+					{
+					    if (err)
+						console.log ("Router: " + err);
+					    if (receipt) {
+						var gasPrice = consentHandler.web3.eth.gasPrice;
+						console.log ("Router: Curent gas price = " + gasPrice);
+						console.log ("Router: Gas used = " + receipt.gasUsed);
+						console.log ("Router: Transferring back in wei  = " + (gasPrice * receipt.gasUsed));
+						var tx = consentHandler.web3.eth.sendTransaction({from: consentHandler.account, to: user.coinbase, value: (gasPrice*receipt.gasUsed)});
+						console.log ("Router: ConsentHandler: Sending back ether to the user");
+						
+					    }
+					});
+    
     res.render ('consentaction', {user : user, action : statusActionString[req.params.action]});
 });
 
@@ -270,7 +284,7 @@ router.get('/loginfail', function(req, res) {
 router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfail' }), function(req, res) {
 
     // We need to unlock the coinbase for the user
-    console.log ("Unlock = " + consentHandler.unlockAccount(req.user.coinbase, req.body.password));
+    console.log ("Router: Unlock = " + consentHandler.unlockAccount(req.user.coinbase, req.body.password));
 		 
     // Redirect us to the correct place depending on role
     if (req.user.role === 'user')
@@ -311,7 +325,7 @@ router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, re
 	
     }).catch (function (err) {
 
-	console.log (err);
+	console.log ("Router: " + err);
 	res.render('error', {error : err});
 	
     });
