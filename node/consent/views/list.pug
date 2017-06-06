@@ -18,7 +18,10 @@ block content
             td= balance
           tr
             td User Consent File
-            td= user.consents
+            if (user.consents)
+              td= user.consents
+            if (!user.consents)
+              td Mining in progress
     h1 Your consents
     div
       table.table.table-hover
