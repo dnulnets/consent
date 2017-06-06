@@ -1,4 +1,4 @@
-1# Consent Handling Prototype
+## Consent Handling Prototype
 An investigative  prototype for consent handling using an ethereum blockchain based on PoA, a web server (express on node) and a mongo database.
 
 It is in no way complete and there is no claim of it ever being completed. It is focusing on the process of handling consents on a blockchain and to learn the functionality, pros and cons of a blockchain supporting this use case.
@@ -71,7 +71,7 @@ This is for setting up a local private blockchain using PoA. It is a bit tricky 
 
 4. Start up the geth by using the **./boot.sh** script in the same directory as the **./setup.sh** script. It will ask for the password for the system account to be able to start the mining.
 
-5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 <blochain account password>**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
+5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 <<blochain account password>>**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
 
 6. In the **whatever/consent/node/consent** directory create a **config.json** file, used by express, containing the following:
 
