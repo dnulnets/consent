@@ -46,7 +46,24 @@ An express web server with a couple of pages to create new users and allow them 
 
 A couple of node javascripts and a genesis file to setup the ethereum blockchain and initiate a ConsentFactory and consent templates on the blockchain.
 
-## What needs to be done
+## Installing and running it
+
+You need to have the following installed, I have indicated the version i am currently running. Newer or older might work as well:
+- geth - 1.6.5-stable-cf87713d
+- node - v7.10.0
+- mongo - 2.6.10
+
+The following directory structure is recommended:
+
+- **<whatever>/consent** Cloned from github.
+- **<whatever>/data** Generated from the setup script in the **consent/deployment/local** directory.
+- **<whatever>/cert** Where you store the pem files for the key and certificate chain.
+
+In addition to this you need a certificate chain for the host, intermediate CA and CA and the private key for the host so you can run the express webserver using SSL. Store them in **<whatever>/cert** directory.
+
+Clone the repository to your machine and go into the deployment/local directory. The scripts are assuming you are allowed to write to the directory where the git repo is stored. In the below example you need
+
+## What more needs to be done
 
 This is just a few items that needs to be sorted out:
 - Is it the right way to go to create an account for each user? Then they have to pay gas for the accept/deny operation of the consent. Since ethereum do not support 3rd party paying we must transfer funds to the user. Need to discuss good solution.
