@@ -71,7 +71,7 @@ This is for setting up a local private blockchain using PoA. It is a bit tricky 
 
 4. Start up the geth by using the **./boot.sh** script in the same directory as the **./setup.sh** script. It will ask for the password for the system account to be able to start the mining.
 
-5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 <blochain account password>**. This script will create the first ConsentFactory, what for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
+5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 <blochain account password>**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
 
 6. In the **whatever/consent/node/consent** directory create a **config.json** file, used by express, containing the following:
 
@@ -92,7 +92,7 @@ Replace the hash for the consentFactory with what you got from the setup script 
 
 7. Start up the express node server by running **npm start <blochain account password> <private key password>** in the **whatever/consent/node/consent** directory. The web server should start and you can browse into **http://localhost:3080**.
 
-## What more needs to be done
+## What more needs to be done/discussed
 
 This is just a few items that needs to be sorted out:
 - Is it the right way to go to create an account for each user? Then they have to pay gas for the accept/deny operation of the consent. Since ethereum do not support 3rd party paying we must transfer funds to the user. Need to discuss good solution.
