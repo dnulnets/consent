@@ -1,4 +1,4 @@
-# Consent Handling Prototype
+1# Consent Handling Prototype
 An investigative  prototype for consent handling using an ethereum blockchain based on PoA, a web server (express on node) and a mongo database.
 
 It is in no way complete and there is no claim of it ever being completed. It is focusing on the process of handling consents on a blockchain and to learn the functionality, pros and cons of a blockchain supporting this use case.
@@ -99,5 +99,5 @@ This is just a few items that needs to be sorted out:
 - How to handle integrity. Wether or not a person has agreed or not is considered personal data and henec cannot be visible on a public blockchain.
 - Is PoA the way to go, and if so who is the Authority in this case?
 - Identity and proof of identity of the person is needed for a signature.
-- Signature, how to handle that on the consents or is it enough as it is, i.e. accepted or denied via contract from the users account?  Don't know enough of ethereum blockchain if some kind of signing can be done.
-- The consent model is that really the way to go? What to put in the blockchain and what to not put there. Need disucssion!
+- Signature, how to handle that on the consents or is it enough as it is, i.e. accepted or denied via contract from the users ethereum account since they need to unlock it?  Don't know enough of ethereum blockchain if some kind of signing can be done or if this is adequat.
+- The consent model is that really the way to go? What to put in the blockchain and what to not put there. Maybe only the actual consent is needed? Need disucssion!
