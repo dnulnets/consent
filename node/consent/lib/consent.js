@@ -103,7 +103,19 @@ ConsentHandler.prototype.newAccount = function (password)
 //
 ConsentHandler.prototype.unlockAccount = function (coinbase, password)
 {
-    return this.web3.personal.unlockAccount (coinbase, password);
+    // Allow it to be open for transaction for 15 seconds
+    return this.web3.personal.unlockAccount (coinbase, password, 15);
+}
+
+//
+// Creates a new account, use the supplied password as the secret
+//
+ConsentHandler.prototype.lockAccount = function (coinbase)
+{
+    // lockAccount does not seem to be implemented yet, lets have a short login time
+    // instead.
+    return true;
+    //return this.web3.personal.lockAccount (coinbase);
 }
 
 //
