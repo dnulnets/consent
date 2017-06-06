@@ -24,7 +24,13 @@ block content
         tr
           td Status
           td= consent.status
+        tr
+          td Password
+          td
+            input.form-control(type='password', name="password", placeholder='Password')
     h1 What do you want to do with this consent?
+    p By accepting you agree to the usage of the purpouse as described above. By denying you do not agree. You can at any time change your decision or make no decision at all by pressing cancel. If you choose to accept or deny you need to reenter your password to sign your decision.
+    p
     a(href="/consentaction/"+consent.id+"/1",class="btn btn-success") Accept
     b &nbsp;
     a(href="/consentaction/"+consent.id+"/0",class="btn btn-success") Deny
