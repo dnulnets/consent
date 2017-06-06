@@ -5,7 +5,7 @@ It is in no way complete and there is no claim of it ever being completed. It is
 
 **This is work in progress, but it is fully functional and allows you to create users, administrators, consent templates, consenst and accept or deny them.**
 
-**For contact, feel free to contact med at tomas.stenlund@telia.com**
+**Feel free to contact me with any questions, comments or if you want to suggest changes, ideas or whatever**
 
 ## What is a consent?
 **When one person voluntarily agrees to the proposal or desires of another.**

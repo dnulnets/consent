@@ -1,7 +1,7 @@
 //
 // The mongoose model for the prototype
 //
-// Copyright 2017 Tomas Stenlund
+// Copyright 2017 Tomas Stenlund, tomas.stenlund@telia.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
