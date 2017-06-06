@@ -3,7 +3,10 @@ An investigative  prototype for consent handling using an ethereum blockchain ba
 
 It is in no way complete and there is no claim of it ever being completed. It is focusing on the process of handling consents on a blockchain and to learn the functionality, pros and cons of a blockchain supporting this use case.
 
-**This is work in progress.**
+**This is work in progress, but it is fully functional and allows you to create users, administrators, consent templates, consenst and accept or deny them.**
+
+**For contact, feel free to contact med at tomas.stenlund@telia.com**
+
 ## What is a consent?
 **When one person voluntarily agrees to the proposal or desires of another.**
 
@@ -63,22 +66,22 @@ In addition to this you need a certificate chain for the host, intermediate CA, 
 
 This is for setting up a local private blockchain using PoA. It is a bit tricky mostly because I have not provided any script and hardcoded a lot of values. This is after all a prototype:
 
-1. Clone the repository to your machine and go into the **whatever/consent/deployment/local** directory. The scripts are assuming you are allowed to write to the directory where the git repo is stored, i.e. the **whatever** directory. Run the **./setup.sh** script from the directory. You should now have the **data** directory mentioned above with the blockchain. Generate your first account with geth so you get an account file in the **whatever/data/keystore**, this account is the main account for your blockchain used by the system. Remeber its hash.
+1. Clone the repository to your machine and go into the **whatever/consent/deployment/local** directory. The scripts are assuming you are allowed to write to the directory where the git repo is stored, i.e. the **whatever** directory. Run the **./setup.sh** script from the directory. You should now have the **data** directory mentioned above with the blockchain. Generate your first account with geth so you get an account file in the **whatever/data/keystore**, this account is the main account for your blockchain used by the system. Update the **./boot.sh** script to unlock your main account and remember the hash of the account for later use (in puppeth, next bullet).
 
-2. I used puppeth to generate the initial genesis file. Use the values I provide if you do not want to change them in all scripts. Run it and use **"PermobilTest"** as network name. Select 2 from the menu and 2 again for a PoA. Use default whenever presented with one. Use the system account hash from bullet 1 as the authority to seal and prefund that account as well. Use network id as 1967 and embed no fun in the genesis block. Save it and open it up in an editor and clean it up. Look at the genesis.json file in the repository for how it should look like when it is cleaned up. Rerun the **./setup.sh** script again and use the genesis file you just created (name it genesis.json and store it in the same location as the repository one, otherwise the **./setup.sh** script will not find it.
+2. I used puppeth to generate the initial genesis file to make it easier to set up PoA (clique). Use the values I provide if you do not want to change them in all scripts. Run it and use **"PermobilTest"** as network name. Select 2 from the menu and 2 again for a PoA. Use default whenever presented with one. Use the system account hash from bullet 1 as the authority to seal and prefund that account as well. Use network id as 1967 and embed no fun/vanity in the genesis block unless you want to. Save it and open it up in an editor and clean it up. Look at the genesis.json file in the repository for how it should look like when it is cleaned up. Rerun the **./setup.sh** script again and use the genesis file you just created (name it genesis.json and store it in the same location as the repository one, otherwise the **./setup.sh** script will not find it.
 
 3. Go into the solidity directory **whatever/consent/sol** and run **make**. It will generate the bytecode for the contracts.
 
-4. Start up the geth by using the **./boot.sh** script in the same directory as the **./setup.sh** script. It will ask for the password for the system account to be able to start the mining.
+4. Start up geth by using the **./boot.sh** script in the same directory as the **./setup.sh** script. It will ask for the password for the system ethereum account to be able to start the mining.
 
-5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 &gt;blochain account password&lt;**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
+5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 &lt;blockhain account password&gt;**. This script will create the first ConsentFactory. Wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
 
 6. In the **whatever/consent/node/consent** directory create a **config.json** file, used by express, containing the following:
 
 ```
 {
 "web3url": "http://localhost:8545",
-"consentFactory": "0x463e2944c03bce29b21e6222b019e474d4a8a403",
+"consentFactory": "<Your ConsentFactory hash from bullet 5>",
 "privateKey": "/whatever/cert/localhost.key.pem",
 "certificate": "/whatever/cert/localhost.cert.pem",
 "ica": "/whatever/cert/ica.cert.pem",
@@ -86,11 +89,11 @@ This is for setting up a local private blockchain using PoA. It is a bit tricky 
 }
 ```
 
-Replace the hash for the consentFactory with what you got from the setup script and all of the certificates and key locations to your values.
+Add the hash for the consentFactory with what you got from the setup script and all of the certificates and key locations to your values.
 
 6. Install all node required libraries by running **npm install** in the **whatever/consent/node/consent** directory.
 
-7. Start up the express node server by running **npm start <blochain account password> <private key password>** in the **whatever/consent/node/consent** directory. The web server should start and you can browse into **http://localhost:3080**.
+7. Start up the express node server by running **npm start &lt;blochain account password&gt; &lt;private key password&gt;** in the **whatever/consent/node/consent** directory. The web server should start and you can browse into **http://localhost:3080**.
 
 ## What more needs to be done/discussed
 
