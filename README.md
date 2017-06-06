@@ -71,7 +71,7 @@ This is for setting up a local private blockchain using PoA. It is a bit tricky 
 
 4. Start up the geth by using the **./boot.sh** script in the same directory as the **./setup.sh** script. It will ask for the password for the system account to be able to start the mining.
 
-5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 <<blochain account password>>**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
+5. Go into the **whatever/consent/node/consent** directory and run the following **node ./lib/setup_contract_factory.js http://localhost:8545 &gt;blochain account password&lt;**. This script will create the first ConsentFactory, wait for the blockchain to mine it and remember the consent factory hash which will be printed by the script once it is finished.
 
 6. In the **whatever/consent/node/consent** directory create a **config.json** file, used by express, containing the following:
 
