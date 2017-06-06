@@ -125,13 +125,26 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
     var user = req.user;
 
     // We need to unlock the coinbase for the user, to be able to do the transaction
+    console.log ("Router: User = " + user.coinbase);
     console.log ("Router: Trying to unlock the ethereum account");
     var unlocked = consentHandler.unlockAccount(req.user.coinbase, req.body.password);
     console.log ("Router: Unlocking = " + unlocked);
     
     // Did we unlock it ?
     if (unlocked) {
+	
+	// Sign the consent
+	var consent = consentHandler.consentContract.at(req.params.consentId);
+	var id = consent.getTemplate();
+	var consentTemplate = consentHandler.consentTemplateContract.at(id);
+	var item = JSON.stringify ({consentId: req.params.consentId, action: req.body.action, title:consentTemplate.getTitle(), text: consentTemplate.getText()});
+	console.log ("Router: Message = " + item);
+	var msg = consentHandler.web3.sha3(item);
+	console.log ("Router: SHA3 = " + msg);
+	var signature = consentHandler.web3.eth.sign(user.coinbase, "0x" + msg);
+	console.log ("Router: Signature = " + signature);
 
+	// Send the status change of the consent
 	txHash = consentHandler.consentFactory.setConsentStatus.sendTransaction (req.params.consentId,
 										 req.body.action,
 										 {from: user.coinbase, gas: 50000});
