@@ -9,22 +9,22 @@ block content
           if(item.readonly)
             input.form-control(type='text', name="purpouse", value=item.purpouse, readonly)
           if(!item.readonly)
-            input.form-control(type='text', name="purpouse", value=item.purpouse)
+            input.form-control(type='text', name="purpouse", value=item.purpouse, required)
         b &nbsp;
         label Locale
           if(item.readonly)
             input.form-control(type='text', name="locale", value=item.locale, readonly)
           if(!item.readonly)
-            input.form-control(type='text', name="locale", value=item.locale)
+            input.form-control(type='text', name="locale", value=item.locale, required, pattern='([a-z]{2}-|)[A-Z]{2}')
         b &nbsp;
         label Version
           input.form-control(type='text', name="version", value=item.version, readonly)
       .form-group
         label Title
-          input.form-control(type='text', name="title", placeholder='Enter title')
+          input.form-control(type='text', name="title", placeholder='Enter title', required)
       .form-group
         label Description
-        textarea.form-control(rows="5", name="description", placeholder='Enter description')
+        textarea.form-control(rows="5", name="description", placeholder='Enter description', required)
       button.btn.btn-primary(type='submit') Submit
       b &nbsp;
       a(href='/listofactivetemplates')
