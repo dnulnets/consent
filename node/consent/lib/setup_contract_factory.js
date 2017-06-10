@@ -60,8 +60,10 @@ function addSomeConsentTemplates (factory)
 {
     consentHandler.setConsentFactoryAddress (factory);
     console.log ("Setup: Adding some consent templates for testing purpouses");
-    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "sv-SE"));
-    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product research", "Permobil is conducting a data analysis that we want your consent to perform. It will help us in our product development.", "SE"));
+    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product development",
+									"Xxxxx AB wants to record information from your usage of the yyyyyy to perform analysis to get a better understanding of our products to use for improvements and development of new products. The information used in the analysis cannot be traced back to you.", "en-SE"));
+    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Produktutveckling",
+									"Xxxxx AB vill samla på sig information om hur du använder din yyyyy för att kunna göra analyser så vi har bättre underlag för att kunna förbättra och utveckla våra produkter. Informationen som används till analysen kan inte spåras tillbaka till dig som person.", "SE"));
 }
 
 // Create the factory for the consents
