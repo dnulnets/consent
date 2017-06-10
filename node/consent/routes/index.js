@@ -133,15 +133,29 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
     // Did we unlock it ?
     if (unlocked) {
 	
-	// Sign the consent
+	// Sign the consent, experimentation
+	console.log("Router: Experimental signing of the consent");
+	var currentdate = new Date(); 
+	var datetime = currentdate.getDate() + "/"
+            + (currentdate.getMonth()+1)  + "/" 
+            + currentdate.getFullYear() + " @ "  
+            + currentdate.getHours() + ":"  
+            + currentdate.getMinutes() + ":" 
+            + currentdate.getSeconds();	
 	var consent = consentHandler.consentContract.at(req.params.consentId);
 	var id = consent.getTemplate();
 	var consentTemplate = consentHandler.consentTemplateContract.at(id);
-	var item = JSON.stringify ({consentId: req.params.consentId, action: req.body.action, title:consentTemplate.getTitle(), text: consentTemplate.getText()});
+	var item = JSON.stringify ({consentId: req.params.consentId, action: req.body.action, title:consentTemplate.getTitle(), text: consentTemplate.getText(), dateTime: datetime});
 	console.log ("Router: Message = " + item);
 	var msg = consentHandler.web3.sha3(item);
 	console.log ("Router: SHA3 = " + msg);
-	var signature = consentHandler.web3.eth.sign(user.coinbase, "0x" + msg);
+	var signature;
+	/* Some version do not have the hex indicator */
+	if (msg[1] != 'x')
+	    signature = consentHandler.web3.eth.sign(user.coinbase, "0x" + msg);
+	else
+	    signature = consentHandler.web3.eth.sign(user.coinbase, msg);
+	    
 	console.log ("Router: Signature = " + signature);
 
 	// Send the status change of the consent
