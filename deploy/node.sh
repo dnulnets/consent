@@ -4,5 +4,5 @@
 #
 # Copyright (c) 2017, Tomas Stenlund, All rights reserved
 #
-geth --identity "PermobilTest" --rpc --rpcport "8545" --rpccorsdomain "*" --datadir "../../data" --port "30303" --bootnodes enode://a0ff693ea8b64bb9192c006434bd11ae51951efdd33ef06f5567918a03286755bbb78116f7b7bb77bf72a8f6600fba8b0fd285d3fde03aa953ee7b482fd58649@46.101.25.188:30303 --rpcapi "db,eth,net,web3" --networkid 1967 console
+geth --identity "PermobilTest" --rpc --rpcport "8545" --rpccorsdomain "*" --datadir "../../data" --port "30303" --bootnodes enode://c35a34e931ae5170e9f858c28ce6f799006f4f3d5a5f7d77e6ea96fb655f86ba6989feffe4e2ba59c9c9e7bd831e6bfd24d822f681ce8723847c8b3e054cc63c@192.168.1.222:30303 --rpcapi "db,eth,net,web3" --networkid 1967 console
 
