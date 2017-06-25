@@ -7,7 +7,7 @@ It is in no way complete and there is no claim of it ever being completed. It is
 
 **Feel free to contact me with any questions, comments or if you want to suggest changes, ideas or whatever**
 
-See the ![Alt text](https://github.com/dnulnets/consent/wiki "wiki") for full information on the solution.
+See the ![wiki](https://github.com/dnulnets/consent/wiki) for full information on the solution.
 
 ## What is a consent?
 **When one person voluntarily agrees to the proposal or desires of another.**
