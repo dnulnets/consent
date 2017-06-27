@@ -18,6 +18,10 @@
 
 var Web3 = require('web3');
 var fs = require('fs');
+var util = require ('util');
+
+// Our own library for contracts on the blockchain
+var Contract = require('./contract.js');
 
 //
 // The Consent Handler object
@@ -47,35 +51,15 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     //
     // Create the contracts binary interface
     //
-    console.log ('ConsentHandler: Loading contract binaries and interface descriptions');
-    var consentSRC;
-    try {
-	consentSRC = fs.readFileSync('../../sol/generated/consent.json');
-    } catch (err) {
-	console.log ('ConsentHandler: Unable to load contracts ' + err.code + ', have you run makefile in the sol directory?');
-	return;
-    }
-    this.consentContracts = JSON.parse(consentSRC)["contracts"];
-    
-    this.consentTemplateContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentTemplate"].abi));
-    this.consentTemplateBinary = "0x" + this.consentContracts["consent.sol:ConsentTemplate"].bin;
-    
-    this.consentContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:Consent"].abi));
-    this.consentBinary = "0x" + this.consentContracts["consent.sol:Consent"].bin;
-    
-    this.consentFactoryContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentFactory"].abi));
-    this.consentFactoryBinary = "0x" + this.consentContracts["consent.sol:ConsentFactory"].bin;    
-
-    this.consentFileContract = this.web3.eth.contract (eval(this.consentContracts["consent.sol:ConsentFile"].abi));
-    this.consentFileBinary = "0x" + this.consentContracts["consent.sol:ConsentFile"].bin;
+    console.log ('ConsentHandler: Initializing all blockchain contracts');
+    this.contract = new Contract (this.web3);
 
     //
-    // Get holds of the consent factory if we have one configured, otherwise log it
-    // and ask the user to runt the setup script.
+    // Set up the consent factory
     //
     if (consentFactory !== 'undefined') {
 	console.log ("ConsentHandler: Using consent factory at " + consentFactory);
-	this.consentFactory = this.consentFactoryContract.at (consentFactory);
+	this.consentFactory = this.contract.ConsentFactory.at (consentFactory);
 	this.factory = consentFactory;
     } else {
 	console.log ("ConsentHandler: Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
@@ -113,7 +97,7 @@ ConsentHandler.prototype.unlockAccount = function (coinbase, password)
 ConsentHandler.prototype.lockAccount = function (coinbase)
 {
     // lockAccount does not seem to be implemented yet, lets have a short login time
-    // instead.
+    // instead. See ConsentHandler.unlockAccount.
     return true;
     //return this.web3.personal.lockAccount (coinbase);
 }
@@ -126,8 +110,8 @@ ConsentHandler.prototype.lockAccount = function (coinbase)
 //
 ConsentHandler.prototype.newConsentFactory = function(mined)
 {
-    var param = {from: this.account, gas: 4000000, data: this.consentFactoryBinary};
-    return this.consentFactoryContract.new (param, mined);
+    var param = {from: this.account, gas: 4000000, data: this.contract.ConsentFactoryBinary};
+    return this.contract.ConsentFactory.new (param, mined);
 }
 
 //
@@ -135,7 +119,7 @@ ConsentHandler.prototype.newConsentFactory = function(mined)
 //
 ConsentHandler.prototype.setConsentFactoryAddress = function (address)
 {
-    this.consentFactory = this.consentFactoryContract.at (address);
+    this.consentFactory = this.contract.ConsentFactory.at (address);
 }
 
 //
@@ -206,12 +190,13 @@ ConsentHandler.prototype.awaitBlockConsensus = function(web3s, txhash, blockCoun
 	if (pollState === stateEnum.start) {
 	    txWeb3.eth.getTransaction(txhash, function(e, txInfo) {
 		if (e || txInfo == null) {
+		    console.log ("ConsentHandler: Abandoning wait, unknown error for txhash " + txhash);
 		    return; // XXX silently drop errors
 		}
-		if (txInfo.blockHash != null) {
+		if (txInfo.blockHash != null && txInfo.blockNumber != null) {
 		    startBlock = txInfo.blockNumber;
 		    savedTxInfo = txInfo;
-		    console.log("ConsentHandler: Mined");
+		    console.log("ConsentHandler: Mined, StartBlock: " + startBlock);
 		    pollState = stateEnum.mined;
 		}
 	    });
@@ -219,9 +204,11 @@ ConsentHandler.prototype.awaitBlockConsensus = function(web3s, txhash, blockCoun
 	else if (pollState == stateEnum.mined) {
             txWeb3.eth.getBlockNumber(function (e, blockNum) {
 		if (e) {
+		    console.log ("ConsentHandler: Abandoning wait, error for txhash " + txhash);
+		    console.log ("ConsentHandler: Error = " + e);
 		    return; // XXX silently drop errors
 		}
-		console.log("ConsentHandler: BlockNum: ", blockNum);
+		console.log("ConsentHandler: BlockNum: " + blockNum + " BlockCount: " + blockCount + " StartBlock: " + startBlock);
 		if (blockNum >= (blockCount + startBlock)) {
 		    pollState = stateEnum.awaited;
 		}
@@ -230,14 +217,15 @@ ConsentHandler.prototype.awaitBlockConsensus = function(web3s, txhash, blockCoun
 	else if (pollState == stateEnum.awaited) {
             txWeb3.eth.getTransactionReceipt(txhash, function(e, receipt) {
 		if (e || receipt == null) {
-		    return; // XXX silently drop errors.  TBD callback error?
+		    console.log ("ConsentHandler: Abandoning wait, unknown error for txhash " + txhash);		    
+		    return;
 		}
 		// confirm we didn't run out of gas
 		// XXX this is where we should be checking a plurality of nodes.  TBD
 		clearInterval(interval);
 		if (receipt.gasUsed >= savedTxInfo.gas) {
 		    pollState = stateEnum.unconfirmed;
-		    callback(new Error("we ran out of gas, not confirmed!"), null);
+		    callback(new Error("We ran out of gas, not confirmed!"), null);
 		} else {
 		    pollState = stateEnum.confirmed;
 		    callback(null, receipt);

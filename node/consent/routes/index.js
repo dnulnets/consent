@@ -86,13 +86,13 @@ router.get ('/list', loggedInUser, function (req, res) {
     //    
     var user = req.user;
     if (typeof user.consents !== 'undefined' && user.consents) {
-	var consentFile = consentHandler.consentFileContract.at(user.consents);
+	var consentFile = consentHandler.contract.ConsentFile.at(user.consents);
 	var list = consentFile.getListOfConsents();
 	var len = list.length;
 	for(i=0; i<len; i++) {
-	    var consent = consentHandler.consentContract.at(list[i]);
+	    var consent = consentHandler.contract.Consent.at(list[i]);
 	    var id = consent.getTemplate();
-	    var consentTemplate = consentHandler.consentTemplateContract.at(id);	    
+	    var consentTemplate = consentHandler.contract.ConsentTemplate.at(id);	    
 	    var item = {id: list[i], title: consentTemplate.getTitle(),
 			version: consentTemplate.getVersion().toNumber(),
 			status: statusString[consent.getStatus().toNumber()]};
@@ -110,9 +110,9 @@ router.get ('/list', loggedInUser, function (req, res) {
 //
 router.get ('/consent/:consentId', loggedInUser, function (req, res) {
     var user = req.user;
-    var consent = consentHandler.consentContract.at(req.params.consentId);
+    var consent = consentHandler.contract.Consent.at(req.params.consentId);
     var id = consent.getTemplate();
-    var consentTemplate = consentHandler.consentTemplateContract.at(id);
+    var consentTemplate = consentHandler.contract.ConsentTemplate.at(id);
     var item = {id: req.params.consentId,
 		title: consentTemplate.getTitle(),
 		text: consentTemplate.getText(),
@@ -142,9 +142,9 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
             + currentdate.getHours() + ":"  
             + currentdate.getMinutes() + ":" 
             + currentdate.getSeconds();	
-	var consent = consentHandler.consentContract.at(req.params.consentId);
+	var consent = consentHandler.contract.Consent.at(req.params.consentId);
 	var id = consent.getTemplate();
-	var consentTemplate = consentHandler.consentTemplateContract.at(id);
+	var consentTemplate = consentHandler.contract.ConsentTemplate.at(id);
 	var item = JSON.stringify ({consentId: req.params.consentId, action: req.body.action, title:consentTemplate.getTitle(), text: consentTemplate.getText(), dateTime: datetime});
 	console.log ("Router: Message = " + item);
 	var msg = consentHandler.web3.sha3(item);
@@ -166,8 +166,9 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 	console.log ("Router: Locking account after transaction");
 	var locked = consentHandler.lockAccount(req.user.coinbase);
 	console.log ("Router: Locking ethereum account = " + locked);
-	
-	consentHandler.awaitBlockConsensus ([consentHandler.web3], txHash, 3, 60, function(err, receipt)
+
+	// Should be more than zero blocks to wait, but we accept it whenever it is mined
+	consentHandler.awaitBlockConsensus ([consentHandler.web3], txHash, 0, 60, function(err, receipt)
 					    {
 						if (err)
 						    console.log ("Router: " + err);
@@ -196,7 +197,7 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 //
 router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req, res) {
     var user = req.user;
-    var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+    var consentTemplate = consentHandler.contract.ConsentTemplate.at(req.params.consentTemplateId);
     var item = {id: req.params.consentTemplateId,
 		purpouse: consentTemplate.getPurpouse(),
 		locale: consentTemplate.getLanguageCountry(),
@@ -221,7 +222,7 @@ router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
     var list = consentHandler.consentFactory.getActiveConsentTemplates ();
     var len = list.length;
     for(i=0; i<len; i++) {
-	var consentTemplate = consentHandler.consentTemplateContract.at(list[i]);
+	var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
 	var item = {id: list[i],
 		    purpouse: consentTemplate.getPurpouse(),
 		    version: consentTemplate.getVersion().toNumber(),
@@ -243,7 +244,7 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
 		 version: 1};
     
     if (req.params.consentTemplateId != 0) {
-	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+	var consentTemplate = consentHandler.contract.ConsentTemplate.at(req.params.consentTemplateId);
 	item = { purpouse: consentTemplate.getPurpouse(),
 		 locale: consentTemplate.getLanguageCountry(),
 		 version: consentTemplate.getVersion().toNumber() + 1,
@@ -276,7 +277,7 @@ router.get ('/listofalltemplates', loggedInAdmin, function (req, res) {
     var list = consentHandler.consentFactory.getAllConsentTemplates ();
     var len = list.length;
     for(i=0; i<len; i++) {
-	var consentTemplate = consentHandler.consentTemplateContract.at(list[i]);
+	var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
 	var item = {id: list[i],
 		    purpouse: consentTemplate.getPurpouse(),
 		    version: consentTemplate.getVersion().toNumber(),
@@ -362,7 +363,7 @@ router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, re
     Account.find({role : 'user'}, 'username consents').sort({username:1}).exec().then(function (lst) {
 	
 	// Get consent template contract
-	var consentTemplate = consentHandler.consentTemplateContract.at(req.params.consentTemplateId);
+	var consentTemplate = consentHandler.contract.ConsentTemplate.at(req.params.consentTemplateId);
 	var item = {id: req.params.consentTemplateId,
 		    purpouse: consentTemplate.getPurpouse(),
 		    locale: consentTemplate.getLanguageCountry(),

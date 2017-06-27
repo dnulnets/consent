@@ -4,10 +4,10 @@ all: generated consent
 generated:
 	mkdir generated
 
-consent: generated/consent.json
-
-generated/consent.json: consent.sol
-	solc --combined-json abi,bin consent.sol > generated/consent.json
+consent: generated
+	solc --abi --bin --overwrite consent.sol -o generated/
+	./makejs.sh
+	cp generated/contract.js ../node/consent/lib/.
 
 clean:
 	@rm -fR generated

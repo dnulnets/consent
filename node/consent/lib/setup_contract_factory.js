@@ -20,7 +20,7 @@
 // limitations under the License.
 //
 
-var ConsentHandler = require ('./consent.js');
+var ConsentHandler = require ('./consent_handler.js');
 var util = require ('util');
 
 //
@@ -47,7 +47,8 @@ function contractMined (error,result)
     if (!error) {
 	if (result.address!=undefined) {
             console.log("Setup: Your consent factory contract is mined and got address " + result.address);
-            console.log("Setup: Make sure you update consentFactory field in config.json");
+	    rcpt = consentHandler.web3.eth.getTransactionReceipt (result.transactionHash);
+	    console.log("Setup: Gas used for contract mining = " + rcpt.gasUsed);
 	    addSomeConsentTemplates(result.address);
 	}
     } else {
@@ -60,10 +61,27 @@ function addSomeConsentTemplates (factory)
 {
     consentHandler.setConsentFactoryAddress (factory);
     console.log ("Setup: Adding some consent templates for testing purpouses");
-    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Product development",
-									"Xxxxx AB wants to record information from your usage of the yyyyyy to perform analysis to get a better understanding of our products to use for improvements and development of new products. The information used in the analysis cannot be traced back to you.", "en-SE"));
-    console.log("Setup: txhash = " + consentHandler.addConsentTemplate ("VSCRAD", 1, "Produktutveckling",
-									"Xxxxx AB vill samla på sig information om hur du använder din yyyyy för att kunna göra analyser så vi har bättre underlag för att kunna förbättra och utveckla våra produkter. Informationen som används till analysen kan inte spåras tillbaka till dig som person.", "SE"));
+    txhash1 = consentHandler.addConsentTemplate ("VSCRAD", 1, "Product development",
+						 "Xxxxx AB wants to record information from your usage of the yyyyyy to perform analysis to get a better understanding of our products to use for improvements and development of new products. The information used in the analysis cannot be traced back to you.", "en-SE");
+    txhash2 = consentHandler.addConsentTemplate ("VSCRAD", 1, "Produktutveckling",
+						 "Xxxxx AB vill samla på sig information om hur du använder din yyyyy för att kunna göra analyser så vi har bättre underlag för att kunna förbättra och utveckla våra produkter. Informationen som används till analysen kan inte spåras tillbaka till dig som person.", "SE");
+    console.log ("Setup: Example Consent template 1 txhash = " + txhash1);
+    console.log ("Setup: Example Consent template 2 txhash = " + txhash2);
+    console.log ("Setup: Waiting for transactions to finish");
+    consentHandler.awaitBlockConsensus ([consentHandler.web3], txhash1, 0, 60, function (err, rcpt)
+					{
+					    if (err)
+						console.log ("Setup: Consent Template 1 = " + util.inspect(err));
+					    else
+						console.log ("Setup: Transactions finished for Consent Template 1, gas used = " + rcpt.gasUsed);
+					}); 
+    consentHandler.awaitBlockConsensus ([consentHandler.web3], txhash2, 0, 60, function (err, rcpt)
+					{
+					    if (err)
+						console.log ("Setup: Consent Template 2 = " + util.inspect(err));
+					    else
+						console.log ("Setup: Transactions finished for Consent Template 2, gas used = " + rcpt.gasUsed);
+					}); 
 }
 
 // Create the factory for the consents
