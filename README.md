@@ -11,3 +11,15 @@ See the ![wiki](https://github.com/dnulnets/consent/wiki) for full information o
 **When one person voluntarily agrees to the proposal or desires of another.**
 
 This is a common use case when a company wants to perform processing of information collected from a person for a specific purpouse. For example: If a company collects data on a persons usage of a product with the intention of using that data to perform product improvements based on that data, the company needs to have a consent.
+## How to setup the development environment
+## How to test the system on the test Consent Chain
+This Consent Chain is run by Permobil AB and we make no claims of uptime or data retention of any sort. This is a prototype.
+
+
+Soon to come ...
+
+
+[Web Application](http://a.b.c.d:3003)
+
+
+## How to run the system locally
