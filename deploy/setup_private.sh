@@ -4,7 +4,7 @@
 #
 # Copyright (c) 2017, Tomas Stenlund, All rights reserved
 #
-rm -fR ../../data/geth
-rm -f ../../data/history
-geth --identity "PermobilTest" --datadir "../../data" --networkid 1967 init "../genesis.json"
+rm -fR ~/.consent/geth
+rm -f ~/.consent/history
+geth --identity "PermobilTest" --datadir "~/.consent" --networkid 1967 init "genesis.json"
 
