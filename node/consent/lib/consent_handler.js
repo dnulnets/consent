@@ -108,10 +108,10 @@ ConsentHandler.prototype.lockAccount = function (coinbase)
 //
 // See consent.sol for details.
 //
-ConsentHandler.prototype.newConsentFactory = function(mined)
+ConsentHandler.prototype.newConsentFactory = function(company, mined)
 {
     var param = {from: this.account, gas: 4000000, data: this.contract.ConsentFactoryBinary};
-    return this.contract.ConsentFactory.new (param, mined);
+    return this.contract.ConsentFactory.new (company, param, mined);
 }
 
 //

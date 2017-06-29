@@ -31,7 +31,9 @@ pragma solidity ^0.4.11;
 contract ConsentTemplate {
 
   address private owner;        /* The owner of the template */
-  string  private purpouse;     /* What purpouse the template is for */ 
+  address private creator;      /* Creator of this template */
+  string  private purpouse;     /* What purpouse the template is for */
+  string  private company;      /* The name of the owner */
   uint    private version;      /* Version of the purpouse, i.e. if the text or title changes for the same purpouse */
   string  private title;        /* The title of the consent */
   string  private text;         /* The text that describes the purpouse of the consent */
@@ -41,9 +43,11 @@ contract ConsentTemplate {
 					  * separated by a dash, so for swedish in Sweden it is "sv-SE" */
 
   /* Creates the contract and set the values of the contract. */
-  function ConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
+  function ConsentTemplate (string _company, string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
   {
     owner = tx.origin;
+    creator = msg.sender;
+    company = _company;
     purpouse = _purpouse;
     version = _version;
     title = _title;
@@ -76,6 +80,12 @@ contract ConsentTemplate {
   {
     return languageCountry;
   }
+
+  function getCompany() public constant returns (string)
+  {
+    return company;
+  }
+  
 }
 
 /*
@@ -96,12 +106,13 @@ contract Consent {
     
   /* State variables for the contract */
   address private owner;  /* Who issues to consent form */
+  address private creator; /* Who created this object */
   address private giver;  /* Who gives the consent, address to the account. */
   Status  private status; /* The status of the consent */
   address private consentTemplate; /* The template this consent is based on */
   
   /* Event to signal that the status has changed */
-  event ConsentStatusChanged (address indexed owner, address indexed giver, address consent, Status status);
+  event ConsentStatusChanged (address indexed consent, address indexed owner, address indexed giver, Status status);
 
   /* A modifier */
   modifier onlyBy(address _account)
@@ -116,6 +127,7 @@ contract Consent {
   {
     giver = _giver;
     owner = tx.origin;
+    creator = msg.sender;
     consentTemplate = _consentTemplate;
     status = Status.requested;
   }
@@ -125,7 +137,7 @@ contract Consent {
   {
     if (_status == Status.denied || _status == Status.accepted) {
       status = _status;
-      ConsentStatusChanged (owner, giver, this, _status);
+      ConsentStatusChanged (this, owner, giver, _status);
     }
   }
 
@@ -133,7 +145,7 @@ contract Consent {
   function cancel () onlyBy (owner) public
   {
     status = Status.cancelled;
-    ConsentStatusChanged (owner, giver, this, Status.cancelled);
+    ConsentStatusChanged (this, owner, giver, Status.cancelled);
   }
   
   /* Returns the status of the consent */    
@@ -148,7 +160,7 @@ contract Consent {
     return ConsentTemplate(consentTemplate);
   }
 
-  /* Returns with teh giver */
+  /* Returns with the giver */
   function getGiver() public constant returns (address)
   {
     return giver;
@@ -175,24 +187,35 @@ contract ConsentFile {
 
   /* The owner of the file */
   address private owner;
-
+  address private creator;
+  address private giver;
+  
   /* The list of all consents */
   address[] private listOfConsents;
 
   /* Events that are sent when things happen */
-  event ConsentFileConsentAdded (address indexed user, address consent);
+  event ConsentFileConsentAdded (address indexed file, address indexed owner, address indexed giver, address consent);
+
+  /* A modifier */
+  modifier onlyBy(address _account)
+  {
+    require(tx.origin == _account);
+    _;
+  }
   
   /* The constructor of the file. Also attaches it to an owner */
-  function ConsentFile (address _owner) public
+  function ConsentFile (address _giver) public
   {
-    owner = _owner;
+    owner = tx.origin;
+    creator = msg.sender;
+    giver = _giver;
   }
 
   /* Adds a new consent to the file */
-  function addConsent (address _consent) public
+  function addConsent (address _consent) onlyBy (owner) public 
   {
     listOfConsents.push (_consent);
-    ConsentFileConsentAdded (owner,  _consent);
+    ConsentFileConsentAdded (this, owner, giver, _consent);
   }
 
   /* Retrieve a list of all consents in the file */
@@ -202,9 +225,9 @@ contract ConsentFile {
   }
 
   /* Retrieves the owner */
-  function getOwner () public constant returns (address)
+  function getGiver () public constant returns (address)
   {
-    return owner;
+    return giver;
   }
   
 }
@@ -227,7 +250,9 @@ contract ConsentFactory {
   
   /* The owner of this contract */
   address private owner;  /* Who owns this Consent Facotory, this is a company */
-
+  address private creator; /* Who created this factory */
+  string  private company;  /* Company that created this */
+  
   /* List of all templates in this factory */
   address[] private listOfAllConsentTemplates;
   address[] private listOfActiveConsentTemplates;
@@ -236,11 +261,11 @@ contract ConsentFactory {
   mapping (string => mapping (string => uint)) private consentTemplates;
   
   /* Events generated when the consent has been created */
-  event ConsentFactoryConsentCreatedEvent(address indexed owner, address indexed user, address indexed file, address consent);
-  event ConsentFactoryFileCreatedEvent(address indexed owner, address indexed user, address file);
-  event ConsentFactoryFailedEvent(address indexed owner, address indexed user, Error error);
-  event ConsentFactoryTemplateAddedEvent (address indexed owner, address indexed factory, address template);
-  event ConsentFactoryConsentStatusChangedEvent (Consent consent, Consent.Status status);
+  event ConsentFactoryConsentCreatedEvent(address indexed factory, address indexed owner, address indexed user, address file, address consent);
+  event ConsentFactoryFileCreatedEvent(address indexed factory, address indexed owner, address indexed user, address file);
+  event ConsentFactoryFailedEvent(address indexed factory, address indexed owner, address indexed user, Error error);
+  event ConsentFactoryTemplateAddedEvent (address indexed factory, address indexed owner, address template);
+  event ConsentFactoryConsentStatusChangedEvent (address indexed factory, address indexed owner, address indexed user, Consent consent, Consent.Status status);
   
   /* A modifier */
   modifier onlyBy(address _account)
@@ -250,9 +275,11 @@ contract ConsentFactory {
   }
   
   /* Constructor for the consent factory */
-  function ConsentFactory() public
+  function ConsentFactory(string _company) public
   { 
     owner = tx.origin;
+    creator = msg.sender;
+    company = _company;
   }
 
   /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
@@ -260,7 +287,7 @@ contract ConsentFactory {
   {
     /* Add the template for the specific language, country and purpouse */
     uint ix = consentTemplates[_purpouse][_languageCountry];
-    address ct = new ConsentTemplate (_purpouse, _version, _title, _text, _languageCountry);
+    address ct = new ConsentTemplate (company, _purpouse, _version, _title, _text, _languageCountry);
     if (ix == 0) {
       ix = listOfActiveConsentTemplates.push (ct);
       consentTemplates[_purpouse][_languageCountry] = ix;
@@ -268,7 +295,7 @@ contract ConsentFactory {
       listOfActiveConsentTemplates[ix-1] = ct;
     }
     listOfAllConsentTemplates.push(ct);
-    ConsentFactoryTemplateAddedEvent (owner, this, ct);    
+    ConsentFactoryTemplateAddedEvent (this, owner, ct);    
   }
 
   /* Returns with a list of active consent templates */
@@ -290,7 +317,7 @@ contract ConsentFactory {
   function createConsentFile (address _user) onlyBy (owner) public
   {
     address file = new ConsentFile (_user);
-    ConsentFactoryFileCreatedEvent(owner, _user, file);
+    ConsentFactoryFileCreatedEvent(this, owner, _user, file);
   }
   
   /* Create a consent for a specific purpouse of the latest version, language and country.
@@ -306,13 +333,13 @@ contract ConsentFactory {
     if (ct != address(0)) {
 
       /* We got a template so generate the consent and put it into the consent file */
-      Consent consent = new Consent (cf.getOwner(), ct);
+      Consent consent = new Consent (cf.getGiver(), ct);
       ConsentFile(_file).addConsent (consent);
-      ConsentFactoryConsentCreatedEvent(owner, cf.getOwner(), _file, consent);
+      ConsentFactoryConsentCreatedEvent(this, owner, cf.getGiver(), _file, consent);
 
     } else {
       
-    ConsentFactoryFailedEvent(owner, cf.getOwner(), Error.no_such_template);
+      ConsentFactoryFailedEvent(this, owner, cf.getGiver(), Error.no_such_template);
       
     }
   }
@@ -351,9 +378,9 @@ contract ConsentFactory {
   {
     if(_status == Consent.Status.accepted || _status == Consent.Status.denied) {
       _consent.setStatus (_status);
-      ConsentFactoryConsentStatusChangedEvent (_consent, _status);
+      ConsentFactoryConsentStatusChangedEvent (this, _consent.getOwner(), _consent.getGiver(), _consent, _status);
     } else {
-      ConsentFactoryFailedEvent (_consent.getOwner(), _consent.getGiver(), Error.only_accepted_or_denied);
+      ConsentFactoryFailedEvent (this, _consent.getOwner(), _consent.getGiver(), Error.only_accepted_or_denied);
     }
   }
   
@@ -361,7 +388,13 @@ contract ConsentFactory {
   function cancelConsent(Consent _consent) onlyBy (_consent.getOwner()) public
   {
     _consent.cancel();
-    ConsentFactoryConsentStatusChangedEvent (_consent, Consent.Status.cancelled);
+    ConsentFactoryConsentStatusChangedEvent (this, _consent.getOwner(), _consent.getGiver(), _consent, Consent.Status.cancelled);
+  }
+
+  /* The company who has this factory */
+  function getCompany() public constant returns (string)
+  {
+    return company;
   }
   
   /* Function to recover the funds on the contract */

@@ -11,6 +11,12 @@ block content
             th Value
         tbody
           tr
+            td Company
+            td= company
+          tr
+            td Company Consent factory
+            td= factory
+          tr
             td Admin Ethereum Account
             td= user.coinbase
           tr
@@ -19,12 +25,6 @@ block content
           tr
             td System Ethereum Account
             td= coinbase
-          tr
-            td System Ethereum Account balance [ether]
-            td= coinbaseBalance
-          tr
-            td System Consent factory
-            td= factory
     h1 Your active templates
     div
       table.table.table-hover

@@ -28,7 +28,8 @@ block content
         thead
           tr
             th(width="30%") Contract
-            th(width="60%") Title
+            th(width="10%") Company
+            th(width="50%") Title
             th(width="5%") Version
             th(width="5%") Status
         tbody
@@ -36,6 +37,7 @@ block content
             tr
               td
                 a(href='/consent/'+val.id) #{val.id}
+              td= val.company
               td= val.title
               td= val.version
               td= val.status

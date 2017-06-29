@@ -95,7 +95,8 @@ router.get ('/list', loggedInUser, function (req, res) {
 	    var consentTemplate = consentHandler.contract.ConsentTemplate.at(id);	    
 	    var item = {id: list[i], title: consentTemplate.getTitle(),
 			version: consentTemplate.getVersion().toNumber(),
-			status: statusString[consent.getStatus().toNumber()]};
+			status: statusString[consent.getStatus().toNumber()],
+		        company: consentTemplate.getCompany()};
 	    listOfConsents.push(item);
 	}
     }
@@ -117,7 +118,8 @@ router.get ('/consent/:consentId', loggedInUser, function (req, res) {
 		title: consentTemplate.getTitle(),
 		text: consentTemplate.getText(),
 		version: consentTemplate.getVersion().toNumber(),
-		status: statusString[consent.getStatus().toNumber()]};
+		status: statusString[consent.getStatus().toNumber()],
+	        company: consentTemplate.getCompany()};
     res.render ('consent', { user : user, consent : item });
 });
 
@@ -138,10 +140,10 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 	var currentdate = new Date(); 
 	var datetime = currentdate.getDate() + "/"
             + (currentdate.getMonth()+1)  + "/" 
-            + currentdate.getFullYear() + " @ "  
+            + currentdate.getFullYear() + "@"  
             + currentdate.getHours() + ":"  
             + currentdate.getMinutes() + ":" 
-            + currentdate.getSeconds();	
+            + currentdate.getSeconds();
 	var consent = consentHandler.contract.Consent.at(req.params.consentId);
 	var id = consent.getTemplate();
 	var consentTemplate = consentHandler.contract.ConsentTemplate.at(id);
@@ -203,7 +205,8 @@ router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req,
 		locale: consentTemplate.getLanguageCountry(),
 		version: consentTemplate.getVersion().toNumber(),
 		title: consentTemplate.getTitle(),
-		text: consentTemplate.getText()};
+		text: consentTemplate.getText(),
+	        company: consentTemplate.getCompany()};
     var backURL=req.header('Referer') || '/';
     res.render ('consenttemplate', { user : user, consentTemplate : item, backURL : backURL });
 });
@@ -227,14 +230,15 @@ router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
 		    purpouse: consentTemplate.getPurpouse(),
 		    version: consentTemplate.getVersion().toNumber(),
 		    languageCountry: consentTemplate.getLanguageCountry(),
-		    title: consentTemplate.getTitle()};
+		    title: consentTemplate.getTitle(),
+		    company: consentTemplate.getCompany()};
 	listOfTemplates.push(item);
     }
 
     var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
     var coinbaseBalance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(consentHandler.account), "ether");
 
-    res.render ('listofactivetemplates', { user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, coinbaseBalance : coinbaseBalance, factory : consentHandler.factory });
+    res.render ('listofactivetemplates', { company: consentHandler.consentFactory.getCompany(), user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, coinbaseBalance : coinbaseBalance, factory : consentHandler.factory });
 });
 
 router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res) {
@@ -248,6 +252,7 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
 	item = { purpouse: consentTemplate.getPurpouse(),
 		 locale: consentTemplate.getLanguageCountry(),
 		 version: consentTemplate.getVersion().toNumber() + 1,
+		 company: consentTemplate.getCompany(),
 	         readonly: true}
     }
     
@@ -282,7 +287,8 @@ router.get ('/listofalltemplates', loggedInAdmin, function (req, res) {
 		    purpouse: consentTemplate.getPurpouse(),
 		    version: consentTemplate.getVersion().toNumber(),
 		    languageCountry: consentTemplate.getLanguageCountry(),
-		    title: consentTemplate.getTitle()};
+		    title: consentTemplate.getTitle(),
+		    company: consentTemplate.getCompany()};
 	listOfTemplates.push(item);
     }
     
