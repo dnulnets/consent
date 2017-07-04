@@ -27,6 +27,7 @@ var Account = new Schema({
     password: String,
     coinbase: String,
     consents: String,
+    factory: String,
     role: String
 });
 

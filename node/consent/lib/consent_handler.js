@@ -53,17 +53,6 @@ var ConsentHandler = function (web3url, consentFactory, password, account) {
     //
     console.log ('ConsentHandler: Initializing all blockchain contracts');
     this.contract = new Contract (this.web3);
-
-    //
-    // Set up the consent factory
-    //
-    if (consentFactory !== 'undefined') {
-	console.log ("ConsentHandler: Using consent factory at " + consentFactory);
-	this.consentFactory = this.contract.ConsentFactory.at (consentFactory);
-	this.factory = consentFactory;
-    } else {
-	console.log ("ConsentHandler: Mising ConsentFactory address, you need to specify it outside ConsentHandler using setConsentFactoryAdress");
-    }
 }
 
 //
@@ -108,10 +97,10 @@ ConsentHandler.prototype.lockAccount = function (coinbase)
 //
 // See consent.sol for details.
 //
-ConsentHandler.prototype.newConsentFactory = function(company, mined)
+ConsentHandler.prototype.newConsentFactory = function(company, owner, mined)
 {
-    var param = {from: this.account, gas: 4000000, data: this.contract.ConsentFactoryBinary};
-    return this.contract.ConsentFactory.new (company, param, mined);
+    var param = {from: this.account, gas: 40000000, data: this.contract.ConsentFactoryBinary};
+    return this.contract.ConsentFactory.new (company, owner, param, mined);
 }
 
 //
@@ -129,11 +118,12 @@ ConsentHandler.prototype.setConsentFactoryAddress = function (address)
 //
 // See consent.sol for details.
 //
-ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title, text, languageCountry)
+ConsentHandler.prototype.addConsentTemplate = function (factory, purpouse, version, title, text, languageCountry)
 {
-    return this.consentFactory.addConsentTemplate.sendTransaction (purpouse, version, title,
-								   text, languageCountry,
-								   {from: this.account, gas: 4000000});
+    var hash = factory.addConsentTemplate.sendTransaction (purpouse, version, title,
+							   text, languageCountry,
+							   {from: factory.getOwner(), gas: 40000000});
+    return hash;
 }
 
 //
@@ -143,21 +133,9 @@ ConsentHandler.prototype.addConsentTemplate = function (purpouse, version, title
 //
 // See consent.sol for details.
 //
-ConsentHandler.prototype.createConsent = function (file, purpouse, languageCountry)
+ConsentHandler.prototype.createConsent = function (factory, file, purpouse, languageCountry)
 {
-    return this.consentFactory.createConsent.sendTransaction (file, purpouse, languageCountry, {from: this.account, gas: 8000000});
-}
-
-//
-// Add an event listener to the ConsentFactory contract. This will get called
-// for all events.
-//
-// See consent.sol for details.
-//
-ConsentHandler.prototype.allEventsHandler = function (mined)
-
-{
-    this.consentFactory.allEvents (mined);
+    return factory.createConsent.sendTransaction (file, purpouse, languageCountry, {from: factory.getOwner(), gas: 8000000});
 }
 
 //
@@ -167,9 +145,10 @@ ConsentHandler.prototype.allEventsHandler = function (mined)
 //
 // See consent.sol for details.
 //
-ConsentHandler.prototype.createConsentFile = function (_user)
+ConsentHandler.prototype.newConsentFile = function (_user, mined)
 {
-    return this.consentFactory.createConsentFile.sendTransaction (_user, {from: this.account, gas:4000000});
+    var param = {from: this.account, gas: 40000000, data: this.contract.ConsentFileBinary};    
+    return this.contract.ConsentFile.new (_user, param, mined);
 }
 
 //

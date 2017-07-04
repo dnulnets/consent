@@ -17,10 +17,10 @@ block content
             td Company Consent factory
             td= factory
           tr
-            td Admin Ethereum Account
+            td Company Ethereum Account
             td= user.coinbase
           tr
-            td Admin Ethereum Account balance [ether]
+            td Company Ethereum Account balance [ether]
             td= balance
           tr
             td System Ethereum Account
@@ -49,4 +49,4 @@ block content
                 a(href="/newtemplate/"+val.id, class="btn btn-primary") New version
               td
                 a(href="/createconsent/"+val.id, class="btn btn-primary") Create Consent
-      a(href="/newtemplate/0", class="btn btn-primary") New template
+      a(href="/newtemplate/0", class="btn btn-primary", disabled=mining) New template

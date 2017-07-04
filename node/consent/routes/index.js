@@ -152,7 +152,7 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 	var msg = consentHandler.web3.sha3(item);
 	console.log ("Router: SHA3 = " + msg);
 	var signature;
-	/* Some version do not have the hex indicator */
+	/* Some version of web3 do not have the hex indicator */
 	if (msg[1] != 'x')
 	    signature = consentHandler.web3.eth.sign(user.coinbase, "0x" + msg);
 	else
@@ -160,11 +160,11 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 	    
 	console.log ("Router: Signature = " + signature);
 
-	// Send the status change of the consent
-	txHash = consentHandler.consentFactory.setConsentStatus.sendTransaction (req.params.consentId,
-										 req.body.action,
-										 {from: user.coinbase, gas: 50000});
-
+	// Send the status change of the consent, this should be going through the consent factory of the company who
+	// issued this consent form so they get notified.
+	txHash = consent.setStatus.sendTransaction (req.body.action,
+						    {from: user.coinbase, gas: 50000});
+	
 	console.log ("Router: Locking account after transaction");
 	var locked = consentHandler.lockAccount(req.user.coinbase);
 	console.log ("Router: Locking ethereum account = " + locked);
@@ -219,26 +219,32 @@ router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
     var listOfTemplates = [];
     
     //
-    // get hold of the consent file for the user
+    // get hold of the consent templates
     //    
     var user = req.user;
-    var list = consentHandler.consentFactory.getActiveConsentTemplates ();
-    var len = list.length;
-    for(i=0; i<len; i++) {
-	var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
-	var item = {id: list[i],
-		    purpouse: consentTemplate.getPurpouse(),
-		    version: consentTemplate.getVersion().toNumber(),
-		    languageCountry: consentTemplate.getLanguageCountry(),
-		    title: consentTemplate.getTitle(),
-		    company: consentTemplate.getCompany()};
-	listOfTemplates.push(item);
+    if (typeof user.factory !== 'undefined' && user.factory) {
+	var factory = consentHandler.contract.ConsentFactory.at (user.factory);
+	var list = factory.getActiveConsentTemplates.call({from: factory.getOwner(), gas: 40000000});
+	var len = list.length;
+	for(i=0; i<len; i++) {
+	    var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
+	    var item = {id: list[i],
+			purpouse: consentTemplate.getPurpouse(),
+			version: consentTemplate.getVersion().toNumber(),
+			languageCountry: consentTemplate.getLanguageCountry(),
+			title: consentTemplate.getTitle(),
+			company: consentTemplate.getCompany()};
+	    listOfTemplates.push(item);
+	}
+
+	var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
+
+	res.render ('listofactivetemplates', { company: factory.getCompany(), user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, factory : user.factory, mining : false });
+    } else {
+	var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
+
+	res.render ('listofactivetemplates', { company: user.username, user : user, consents : [], balance : balance, coinbase : consentHandler.account, factory : "Mining in progress ...", mining : true});
     }
-
-    var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
-    var coinbaseBalance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(consentHandler.account), "ether");
-
-    res.render ('listofactivetemplates', { company: consentHandler.consentFactory.getCompany(), user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, coinbaseBalance : coinbaseBalance, factory : consentHandler.factory });
 });
 
 router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res) {
@@ -264,7 +270,8 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
 //
 router.post('/newtemplate', loggedInAdmin, function(req, res) {
     var user = req.user;
-    consentHandler.addConsentTemplate (req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
+    var factory = consentHandler.contract.ConsentFactory.at (user.factory);
+    consentHandler.addConsentTemplate (factory, req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
     res.render('newtemplatedone', { user : user });
 });
 
@@ -279,20 +286,25 @@ router.get ('/listofalltemplates', loggedInAdmin, function (req, res) {
     // get hold of the consent file for the user
     //    
     var user = req.user;
-    var list = consentHandler.consentFactory.getAllConsentTemplates ();
-    var len = list.length;
-    for(i=0; i<len; i++) {
-	var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
-	var item = {id: list[i],
-		    purpouse: consentTemplate.getPurpouse(),
-		    version: consentTemplate.getVersion().toNumber(),
-		    languageCountry: consentTemplate.getLanguageCountry(),
-		    title: consentTemplate.getTitle(),
-		    company: consentTemplate.getCompany()};
-	listOfTemplates.push(item);
+    if (typeof user.factory !== 'undefined' && user.factory) {
+	var factory = consentHandler.contract.ConsentFactory.at (user.factory);
+	var list = factory.getAllConsentTemplates.call({from: factory.getOwner(), gas: 40000000});
+	var len = list.length;
+	for(i=0; i<len; i++) {
+	    var consentTemplate = consentHandler.contract.ConsentTemplate.at(list[i]);
+	    var item = {id: list[i],
+			purpouse: consentTemplate.getPurpouse(),
+			version: consentTemplate.getVersion().toNumber(),
+			languageCountry: consentTemplate.getLanguageCountry(),
+			title: consentTemplate.getTitle(),
+			company: consentTemplate.getCompany()};
+	    listOfTemplates.push(item);
+	}
+	res.render ('listofalltemplates', { user : user, consents : listOfTemplates });
+    } else {
+	res.render ('listofalltemplates', { user : user, consents : [] });
     }
     
-    res.render ('listofalltemplates', { user : user, consents : listOfTemplates });
 });
 
 //
@@ -312,19 +324,103 @@ router.post('/register', function(req, res) {
 	// Was it succesfull?
         if (err) {
 	    console.log ("Router: Failed to create user " + err);
-            return res.render('register', { account : account });
+            return res.render('exist', { error: err });
         }
 
 	// Authenticate us
         passport.authenticate('local')(req, res, function () {
 
 	    // Start mining a consent list
-	    console.log ("Router: Mining for a consent file for user " + req.body.username + ", blockchain id " + id);
-	    consentHandler.createConsentFile (id);
-	    
-	    // Redirect us to the logged in page
-            res.redirect('/');
-	    
+	    if (req.body.role === "user") {
+		console.log ("Router: Mining for a consent file for user " + req.body.username + ", blockchain id " + id);
+		consentHandler.newConsentFile (id, function (error, result) {
+		    if (!error) {
+			if (result.address!=undefined) {
+			    
+			    console.log("Router: The consent file contract is mined and got address " + result.address);
+			    rcpt = consentHandler.web3.eth.getTransactionReceipt (result.transactionHash);
+			    console.log("Router: Gas used for contract mining = " + rcpt.gasUsed);
+
+			    /* Get the mined factory */
+			    var file = consentHandler.contract.ConsentFile.at (result.address);
+
+			    /* Fins the user who wants the factory */
+			    Account.findOne ({
+				'coinbase' : file.getGiver()
+			    }, function (err, user) {
+				if (!err) {
+				    
+				    console.log ("Router: User located _id = " + user._id);
+				    Account.update(
+					{_id: user._id}, 
+					{consents : result.address },
+					{multi:true}, 
+					function(err, numberAffected){
+					    if (!err)
+						console.log ("Router: Consent file address is inserted into the user record");
+					    else
+						console.log ("Router: Failed to update the user record with the consent file = " + err);
+					});
+				} else {
+				    console.log ("Router: Failed to find the user record for consent file update = " + err);		   
+				}
+			    });
+			}
+			
+		    } else {
+			console.log ("Router: Mining error = " + error);
+		    }
+		});
+
+		res.redirect ("/list");
+	    }
+
+	    if (req.body.role === "admin") {
+		console.log ("Router: Mining for a consent factory for company " + req.body.username + ", blockchain id " + id);
+		consentHandler.newConsentFactory (req.body.username, id, function (error, result) {
+		    
+		    if (!error) {
+			if (result.address!=undefined) {
+			    
+			    console.log("Router: The consent factory contract is mined and got address " + result.address);
+			    rcpt = consentHandler.web3.eth.getTransactionReceipt (result.transactionHash);
+			    console.log("Router: Gas used for contract mining = " + rcpt.gasUsed);
+
+			    /* Get the mined factory */
+			    var factory = consentHandler.contract.ConsentFactory.at (result.address);
+
+			    /* Fins the user who wants the factory */
+			    Account.findOne ({
+				'coinbase' : factory.getOwner()
+			    }, function (err, user) {
+				if (!err) {
+				    
+				    console.log ("Router: User located _id = " + user._id);
+				    Account.update(
+					{_id: user._id}, 
+					{factory : result.address },
+					{multi:true}, 
+					function(err, numberAffected){
+					    if (!err)
+						console.log ("Router: Consent factory address is inserted into the user record");
+					    else
+						console.log ("Router: Failed to update the user record with the consent factory = " + err);
+					});
+				} else {
+				    console.log ("Router: Failed to find the user record for factory update = " + err);		   
+				}
+			    });
+			}
+			
+		    } else {
+			console.log ("Router: Mining error = " + error);
+		    }
+		    
+		});
+
+		res.redirect ("/listofactivetemplates");
+	    }
+	    	    
         });
     });
 });
@@ -345,8 +441,15 @@ router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfa
     // Redirect us to the correct place depending on role
     if (req.user.role === 'user')
 	res.redirect('/list');
-    else
+    else {
+	console.log ("Router: Unlocking ethereum account for user");
+	var unlock = consentHandler.web3.personal.unlockAccount(req.user.coinbase, req.body.password);
+	if (unlock)
+	    console.log ("Router: Ethereum account unlocked");
+	else
+	    console.log ("Router: Failed to unlock account");
 	res.redirect('/listofactivetemplates');
+    }
     
 });
 
@@ -389,7 +492,8 @@ router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, re
 
 router.post('/createconsent', loggedInAdmin, function (req, res) {
     var user = req.user;
-    consentHandler.createConsent (req.body.consents, req.body.purpouse, req.body.locale);
+    var factory = consentHandler.contract.ConsentFactory.at(req.user.factory);
+    consentHandler.createConsent (factory, req.body.consents, req.body.purpouse, req.body.locale);
     res.render ('createconsentdone', {user : user});
 });
 

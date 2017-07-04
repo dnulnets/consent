@@ -87,4 +87,4 @@ function addSomeConsentTemplates (factory)
 // Create the factory for the consents
 //
 console.log ("Setup: Creating a new consent factory");
-consentHandler.newConsentFactory ("Permobil AB", contractMined);
+consentHandler.newConsentFactory ("Permobil AB", consentHandler.account, contractMined);

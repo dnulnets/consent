@@ -212,7 +212,7 @@ contract ConsentFile {
   }
 
   /* Adds a new consent to the file */
-  function addConsent (address _consent) onlyBy (owner) public 
+  function addConsent (address _consent) public 
   {
     listOfConsents.push (_consent);
     ConsentFileConsentAdded (this, owner, giver, _consent);
@@ -275,15 +275,15 @@ contract ConsentFactory {
   }
   
   /* Constructor for the consent factory */
-  function ConsentFactory(string _company) public
-  { 
-    owner = tx.origin;
+  function ConsentFactory(string _company, address _owner) public
+  {
+    owner = _owner;
     creator = msg.sender;
     company = _company;
   }
 
   /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
-  function addConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) onlyBy (owner) public
+  function addConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
   {
     /* Add the template for the specific language, country and purpouse */
     uint ix = consentTemplates[_purpouse][_languageCountry];
@@ -395,6 +395,12 @@ contract ConsentFactory {
   function getCompany() public constant returns (string)
   {
     return company;
+  }
+
+  /* Returns the owner for the factory */
+  function getOwner() public constant returns (address)
+  {
+    return owner;
   }
   
   /* Function to recover the funds on the contract */

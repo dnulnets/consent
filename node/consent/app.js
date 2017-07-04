@@ -38,63 +38,6 @@ var bluebird = require ('bluebird');
 var ConsentHandler = require ('./lib/consent_handler.js');
 consentHandler = new ConsentHandler (config.web3url, config.consentFactory, process.argv[2]);
 
-// Set up the eventhandlers for the blockchain
-var event = consentHandler.allEventsHandler (function (err,res) {
-
-    //
-    // Do this much nicer, but this is a prototype, just go with it for now ;-)
-    //
-    if (!err) {
-
-	var event = res.event;
-	var args = res.args;
-
-	//
-	// If we got a consent file mined event, we need to insert it into the user so we know who owns it.
-	// This is where we store all consents.
-	//
-	if (event == 'ConsentFactoryFileCreatedEvent') {
-
-	    console.log ("Application: Handled event = " + event + "(" + util.inspect(args) + ")");	    
-	    console.log ("Application: Consent file for account " + args.user + " has been mined");
-	    console.log ("Application: Consent file has address " + args.file);
-	    Account.findOne({
-                'coinbase' : args.user
-            },function(err,user){
-
-		if (!err) {
-		    
-		    console.log ("APP: User located _id = " + user._id);
-		    Account.update(
-			{_id: user._id}, 
-			{consents : args.file },
-			{multi:true}, 
-			function(err, numberAffected){
-			    if (!err)
-				console.log ("Application: Consent file address is inserted into the user record");
-			    else
-				console.log ("Application: Failed to update the user record with the consent file = " + err);
-			});
-		    
-		} else {
-
-		    console.log ("Application: Failed to locate the user = " + err);
-		    
-		}
-	    });
-	    
-	} else {
-
-	    console.log ("Application: Unhandled event ignored = " + event + "(" + util.inspect(args) + ")");
-	    
-	}
-
-    } else {
-	
-        console.log("Application: Unable to handle events from the blockchain = " + err);
-    }
-});
-
 // The routing we are using
 var index = require('./routes/index');
 
