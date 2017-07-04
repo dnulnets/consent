@@ -36,7 +36,7 @@ var bluebird = require ('bluebird');
 // Own developed requirements
 //
 var ConsentHandler = require ('./lib/consent_handler.js');
-consentHandler = new ConsentHandler (config.web3url, config.consentFactory, process.argv[2]);
+consentHandler = new ConsentHandler (config.web3url, process.argv[2]);
 
 // The routing we are using
 var index = require('./routes/index');

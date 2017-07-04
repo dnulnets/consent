@@ -26,7 +26,7 @@ var Contract = require('./contract.js');
 //
 // The Consent Handler object
 //
-var ConsentHandler = function (web3url, consentFactory, password, account) {
+var ConsentHandler = function (web3url, password, account) {
 
     //
     // Get hold of the web3 interface
