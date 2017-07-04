@@ -270,9 +270,20 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
 //
 router.post('/newtemplate', loggedInAdmin, function(req, res) {
     var user = req.user;
-    var factory = consentHandler.contract.ConsentFactory.at (user.factory);
-    consentHandler.addConsentTemplate (factory, req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
-    res.render('newtemplatedone', { user : user });
+    
+    // We need to unlock the coinbase for the user, to be able to do the transaction
+    console.log ("Router: User = " + user.coinbase);
+    console.log ("Router: Trying to unlock the ethereum account");
+    var unlocked = consentHandler.unlockAccount(req.user.coinbase, req.body.password);
+    console.log ("Router: Unlocking = " + unlocked);
+
+    if (unlocked) {
+	var factory = consentHandler.contract.ConsentFactory.at (user.factory);
+	consentHandler.addConsentTemplate (factory, req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
+	res.render('newtemplatedone', { user : user });
+    } else {
+	res.render('failedunlock', {user : user});
+    }
 });
 
 //
@@ -442,12 +453,6 @@ router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfa
     if (req.user.role === 'user')
 	res.redirect('/list');
     else {
-	console.log ("Router: Unlocking ethereum account for user");
-	var unlock = consentHandler.web3.personal.unlockAccount(req.user.coinbase, req.body.password);
-	if (unlock)
-	    console.log ("Router: Ethereum account unlocked");
-	else
-	    console.log ("Router: Failed to unlock account");
 	res.redirect('/listofactivetemplates');
     }
     
@@ -492,9 +497,20 @@ router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, re
 
 router.post('/createconsent', loggedInAdmin, function (req, res) {
     var user = req.user;
-    var factory = consentHandler.contract.ConsentFactory.at(req.user.factory);
-    consentHandler.createConsent (factory, req.body.consents, req.body.purpouse, req.body.locale);
-    res.render ('createconsentdone', {user : user});
+    
+    // We need to unlock the coinbase for the user, to be able to do the transaction
+    console.log ("Router: User = " + user.coinbase);
+    console.log ("Router: Trying to unlock the ethereum account");
+    var unlocked = consentHandler.unlockAccount(req.user.coinbase, req.body.password);
+    console.log ("Router: Unlocking = " + unlocked);
+
+    if (unlocked) {
+	var factory = consentHandler.contract.ConsentFactory.at(req.user.factory);
+	consentHandler.createConsent (factory, req.body.consents, req.body.purpouse, req.body.locale);
+	res.render ('createconsentdone', {user : user});
+    } else {
+	res.render ('failedunlock', {user : user});
+    }
 });
 
 module.exports = router;

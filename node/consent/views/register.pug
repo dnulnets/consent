@@ -3,7 +3,7 @@ extends layout
 block content
   .container-fluid
     p.lead Once you have registered a username you will get a blockchain account and a personal consent file that allows you to manage all of your consents.
-    p If you are an administrator you will be able to manage all consent templates and generate new consents for specific users.
+    p If you are a company administrator you will be able to manage your consent templates and create requests for consents from your users.
     br
     form(role='form', action="/register",method="post", style='max-width: 300px;')
       .form-group
@@ -14,7 +14,7 @@ block content
           label(for="sel1") Role
           select.selectpicker.form-control(name="role", id="sel1")
             option(value="user") User
-            option(value="admin") Administrator
+            option(value="admin") Company Administrator
       button.btn.btn-primary(type='submit') Submit
       b &nbsp;
       a(href='/')

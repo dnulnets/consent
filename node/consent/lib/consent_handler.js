@@ -77,7 +77,13 @@ ConsentHandler.prototype.newAccount = function (password)
 ConsentHandler.prototype.unlockAccount = function (coinbase, password)
 {
     // Allow it to be open for transaction for 15 seconds
-    return this.web3.personal.unlockAccount (coinbase, password, 15);
+    var unlocked = false;
+    try {
+	unlocked = this.web3.personal.unlockAccount (coinbase, password, 15);
+    } catch (e) {
+	console.log ("ConsentHandler : " + e);
+    }
+    return unlocked;
 }
 
 //
