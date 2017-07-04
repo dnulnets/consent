@@ -11,17 +11,20 @@ block content
             th Value
         tbody
           tr
-            td User Ethereum Account
-            td= user.coinbase
-          tr
-            td User Ethereum Account balance [ether]
-            td= balance
+            td User
+            td= user.username
           tr
             td User Consent File
             if (user.consents)
               td= user.consents
             if (!user.consents)
               td Mining in progress
+          tr
+            td User Ethereum Account
+            td= user.coinbase
+          tr
+            td User Ethereum Account balance [ether]
+            td= balance
     h1 Your consents
     div
       table.table.table-hover

@@ -10,7 +10,7 @@ html
       .container-fluid
         .navbar-header
           a.navbar-brand(href="/")
-            | Consent handling
+            | Consent Chain
         ul.nav.navbar-nav
           if(user)
             if(user.role === 'user')
@@ -36,8 +36,6 @@ html
               a(href="/logout")
                 span.glyphicon.glyphicon-log-out
                 |  Logout
-          li
-            img(src="/logo.png", style="height:50px")
     block content
 
   script(src='https://code.jquery.com/jquery.js')

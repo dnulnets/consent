@@ -5,7 +5,7 @@ block content
     h1 New Consent Template
     form(role='form', action="/newtemplate",method="post", style='max-width: 800px;')
       .form-group
-        label Purpouse
+        label Purpose
           if(item.readonly)
             input.form-control(type='text', name="purpouse", value=item.purpouse, readonly)
           if(!item.readonly)
