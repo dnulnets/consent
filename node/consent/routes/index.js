@@ -26,7 +26,7 @@ var router = express.Router();
 const util = require('util');
 
 //
-// Status data
+// Status for the consent to use as text for messages and buttons.
 //
 var statusString = ["Denied","Accepted","Requested","","Cancelled"];
 var statusActionString = ["deny", "accept", "request", "cancel"];
@@ -70,7 +70,8 @@ router.get('/', function (req, res) {
 // Unauthorized page
 //
 router.get('/unauthorized', function (req, res) {
-    res.render('unauthorized', {});
+    var backURL=req.header('Referer') || '/';    
+    res.render('unauthorized', {backURL : backURL});
 });
 
 
