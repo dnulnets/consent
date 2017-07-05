@@ -14,12 +14,12 @@ html
         ul.nav.navbar-nav
           if(user)
             if(user.role === 'user')
-              li.active
+              li(class=menu_l)
                 a(href="/list") List of consents
             if(user.role === 'admin')
-              li.active
+              li(class=menu_lactive)
                 a(href="/listofactivetemplates") List of templates
-              li.active
+              li(class=menu_lall)
                 a(href="/listofalltemplates") Template history
         ul.nav.navbar-nav.navbar-right
           if(!user)

@@ -104,7 +104,7 @@ router.get ('/list', loggedInUser, function (req, res) {
     
     balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
     
-    res.render ('list', { user : user, consents : listOfConsents, balance : balance });
+    res.render ('list', { user : user, consents : listOfConsents, balance : balance, menu_l : "active" });
 });
 
 //
@@ -242,11 +242,11 @@ router.get ('/listofactivetemplates', loggedInAdmin, function (req, res) {
 
 	var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
 
-	res.render ('listofactivetemplates', { company: factory.getCompany(), user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, factory : user.factory, mining : false });
+	res.render ('listofactivetemplates', { company: factory.getCompany(), user : user, consents : listOfTemplates, balance : balance, coinbase : consentHandler.account, factory : user.factory, mining : false, menu_lactive : "active" });
     } else {
 	var balance = consentHandler.web3.fromWei(consentHandler.web3.eth.getBalance(user.coinbase), "ether");
 
-	res.render ('listofactivetemplates', { company: user.username, user : user, consents : [], balance : balance, coinbase : consentHandler.account, factory : "Mining in progress ...", mining : true});
+	res.render ('listofactivetemplates', { company: user.username, user : user, consents : [], balance : balance, coinbase : consentHandler.account, factory : "Mining in progress ...", mining : true, menu_lactive : "active"});
     }
 });
 
@@ -315,9 +315,9 @@ router.get ('/listofalltemplates', loggedInAdmin, function (req, res) {
 			company: consentTemplate.getCompany()};
 	    listOfTemplates.push(item);
 	}
-	res.render ('listofalltemplates', { user : user, consents : listOfTemplates });
+	res.render ('listofalltemplates', { user : user, consents : listOfTemplates, menu_lall : "active" });
     } else {
-	res.render ('listofalltemplates', { user : user, consents : [] });
+	res.render ('listofalltemplates', { user : user, consents : [], menu_lall : "active" });
     }
     
 });
