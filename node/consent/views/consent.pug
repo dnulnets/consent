@@ -33,10 +33,10 @@ block content
             td
               input.form-control(type='password', name="password", placeholder='Password', required)
       h1 What do you want to do with this consent?
-      p By pressing the Accept button you agree to the consent and its purpouse as stated above. By pressing the Deny button you deny the request for this consent. You can at any time change your decision or make no decision at all by pressing Cancel. If you choose to accept or deny you need to reenter your password to sign your decision.
+      p By pressing the Accept button you agree to the consent and its purpose as stated above. By pressing the Deny button you deny the request for this consent. You can at any time change your decision or make no decision at all by pressing Cancel. If you choose to accept or deny you need to reenter your password to sign your decision.
       p
       button.btn.btn-primary(type='submit', name='action' value='1') Accept
       b &nbsp;
       button.btn.btn-primary(type='submit', name='action' value='0') Deny
       b &nbsp;
-      a(href="/list",class="btn btn-danger") Cancel
+      a(href=backURL,class="btn btn-danger") Cancel

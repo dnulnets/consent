@@ -120,11 +120,13 @@ router.get ('/consent/:consentId', loggedInUser, function (req, res) {
 		version: consentTemplate.getVersion().toNumber(),
 		status: statusString[consent.getStatus().toNumber()],
 	        company: consentTemplate.getCompany()};
-    res.render ('consent', { user : user, consent : item });
+    var backURL=req.header('Referer') || '/';    
+    res.render ('consent', { user : user, consent : item, backURL : backURL });
 });
 
 router.post ('/consent/:consentId', loggedInUser, function (req, res) {
     var user = req.user;
+    var backURL=req.header('Referer') || '/';    
 
     // We need to unlock the coinbase for the user, to be able to do the transaction
     console.log ("Router: User = " + user.coinbase);
@@ -185,11 +187,11 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 						}
 					    });
 	
-	res.render ('consentaction', {user : user, action : statusActionString[req.params.action]});
+	res.render ('consentaction', {user : user, action : statusActionString[req.body.action], backURL : backURL});
 
     } else {
 
-	res.render ('failedunlock', {user : user});
+	res.render ('failedunlock', {user : user, backURL : backURL});
 	
     }
 });
@@ -270,6 +272,7 @@ router.get('/newtemplate/:consentTemplateId', loggedInAdmin, function (req, res)
 //
 router.post('/newtemplate', loggedInAdmin, function(req, res) {
     var user = req.user;
+    var backURL=req.header('Referer') || '/';    
     
     // We need to unlock the coinbase for the user, to be able to do the transaction
     console.log ("Router: User = " + user.coinbase);
@@ -280,9 +283,9 @@ router.post('/newtemplate', loggedInAdmin, function(req, res) {
     if (unlocked) {
 	var factory = consentHandler.contract.ConsentFactory.at (user.factory);
 	consentHandler.addConsentTemplate (factory, req.body.purpouse, Number(req.body.version), req.body.title, req.body.description, req.body.locale);  
-	res.render('newtemplatedone', { user : user });
+	res.render('newtemplatedone', { user : user, backURL : backURL });
     } else {
-	res.render('failedunlock', {user : user});
+	res.render('failedunlock', {user : user, backURL : backURL});
     }
 });
 
@@ -444,7 +447,8 @@ router.get('/login', function(req, res) {
 });
 
 router.get('/loginfail', function(req, res) {
-    res.render('loginfail', { user : req.user });
+    var backURL=req.header('Referer') || '/';        
+    res.render('loginfail', { user : req.user, backURL : backURL });
 });
 
 router.post('/login', passport.authenticate('local',{ failureRedirect: '/loginfail' }), function(req, res) {
@@ -497,6 +501,7 @@ router.get('/createconsent/:consentTemplateId', loggedInAdmin, function (req, re
 
 router.post('/createconsent', loggedInAdmin, function (req, res) {
     var user = req.user;
+    var backURL=req.header('Referer') || '/';    
     
     // We need to unlock the coinbase for the user, to be able to do the transaction
     console.log ("Router: User = " + user.coinbase);
@@ -507,9 +512,9 @@ router.post('/createconsent', loggedInAdmin, function (req, res) {
     if (unlocked) {
 	var factory = consentHandler.contract.ConsentFactory.at(req.user.factory);
 	consentHandler.createConsent (factory, req.body.consents, req.body.purpouse, req.body.locale);
-	res.render ('createconsentdone', {user : user});
+	res.render ('createconsentdone', {user : user, backURL : backURL});
     } else {
-	res.render ('failedunlock', {user : user});
+	res.render ('failedunlock', {user : user, backURL : backURL});
     }
 });
 

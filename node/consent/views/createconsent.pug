@@ -2,7 +2,7 @@ extends layout
 
 block content
   .container-fluid
-    h1 New Consent Template
+    h1 Create new consent
     form(role='form', action="/createconsent",method="post", style='max-width: 800px;')
       input.hidden(name="purpouse" value=consentTemplate.purpouse)
       input.hidden(name="locale" value=consentTemplate.locale)
