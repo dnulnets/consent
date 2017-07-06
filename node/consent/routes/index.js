@@ -198,6 +198,36 @@ router.post ('/consent/:consentId', loggedInUser, function (req, res) {
 });
 
 //
+// View the blockchain status
+//
+router.get ('/blockchain', loggedInAdmin, function (req, res) {
+    var user = req.user;
+    var backURL=req.header('Referer') || '/';
+    var data = {versionAPI : consentHandler.web3.version.api,
+		versionNode : consentHandler.web3.version.node,
+		versionNetwork : consentHandler.web3.version.network,
+		versionEthereum : consentHandler.web3.version.ethereum,
+		isConnected : consentHandler.web3.isConnected(),
+		currentProvider : util.inspect(consentHandler.web3.currentProvider),
+		listening : consentHandler.web3.net.listening,
+		peerCount : consentHandler.web3.net.peerCount,
+		mining : consentHandler.web3.eth.mining,
+		gasPrice : consentHandler.web3.eth.gasPrice,
+		blockNumber : consentHandler.web3.eth.blockNumber,
+
+		lastBlock : util.inspect(consentHandler.web3.eth.getBlock (consentHandler.web3.eth.blockNumber)),
+
+		numberOfAccounts : consentHandler.web3.eth.accounts.length,
+		coinbase : consentHandler.web3.eth.coinbase,
+		balance : consentHandler.web3.eth.getBalance (consentHandler.web3.eth.coinbase),
+		menu_bc : "active",
+		user : user,
+		backURL : backURL
+	       };
+    res.render ('blockchain', data);
+});
+
+//
 // View a specific consent template
 //
 router.get ('/consenttemplate/:consentTemplateId', loggedInAdmin, function (req, res) {

@@ -1,0 +1,72 @@
+extends layout
+
+block content
+  .container-fluid
+    h1 Consent chain
+    h2 Version
+    table.table.table-hover
+      thead
+        tr
+          th(wdith="10%") Field
+          th(width="90%") Value
+      tbody
+        tr
+          td javascript API
+          td= versionAPI
+        tr
+          td Node version
+          td= versionNode
+        tr
+          td Network version
+          td= versionNetwork
+        tr
+          td Ethereum version
+          td= versionEthereum
+    h2 Accounts
+    table.table.table-hover
+      thead
+        tr
+          th(wdith="10%") Field
+          th(width="90%") Value
+      tbody
+        tr
+          td Number of accounts
+          td= numberOfAccounts
+        tr
+          td Coinbase
+          td= coinbase
+        tr
+          td Balance
+          td= balance
+    h2 Status
+    table.table.table-hover
+      thead
+        tr
+          th(wdith="10%") Field
+          th(width="90%") Value
+      tbody
+        tr
+          td Connected
+          td= isConnected
+        tr
+          td currentProvider
+          td= currentProvider
+        tr
+          td Listening
+          td= listening
+        tr
+          td Peer Count
+          td= peerCount
+        tr
+          td Mining
+          td= mining
+        tr
+          td Gas Price
+          td= gasPrice
+        tr
+          td Last Block Number
+          td= blockNumber
+        tr
+          td Last Block
+          td= lastBlock
+    a(href=backURL,class="btn btn-primary") Back
