@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.5.2;
 
 /*
  * This file contains a set of contracts used to handle consents between a company
@@ -43,7 +43,7 @@ contract ConsentTemplate {
 					  * separated by a dash, so for swedish in Sweden it is "sv-SE" */
 
   /* Creates the contract and set the values of the contract. */
-  function ConsentTemplate (string _company, string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
+  constructor (string memory _company, string memory _purpouse, uint _version, string memory _title, string memory _text, string memory _languageCountry) public
   {
     owner = tx.origin;
     creator = msg.sender;
@@ -56,32 +56,32 @@ contract ConsentTemplate {
   }
 
   /* Set of getters for the contract */
-  function getVersion () public constant returns (uint)
+  function getVersion () public view returns (uint)
   {
     return version;
   }
 
-  function getTitle () public constant returns (string)
+  function getTitle () public view returns (string memory)
   {
     return title;
   }
 
-  function getPurpouse () public constant returns (string)
+  function getPurpouse () public view returns (string memory)
   {
     return purpouse;
   }
   
-  function getText () public constant returns (string)
+  function getText () public view returns (string memory)
   {
     return text;
   }
 
-  function getLanguageCountry () public constant returns (string)
+  function getLanguageCountry () public view returns (string memory)
   {
     return languageCountry;
   }
 
-  function getCompany() public constant returns (string)
+  function getCompany() public view returns (string memory)
   {
     return company;
   }
@@ -105,7 +105,7 @@ contract Consent {
   }
     
   /* State variables for the contract */
-  address private owner;  /* Who issues to consent form */
+  address payable private owner;  /* Who issues to consent form */
   address private creator; /* Who created this object */
   address private giver;  /* Who gives the consent, address to the account. */
   Status  private status; /* The status of the consent */
@@ -123,7 +123,7 @@ contract Consent {
   
   /* This function is executed at initialization and sets the owner and the giver of the consent */
   /* as well as what it contains */
-  function Consent(address _giver, address _consentTemplate) public
+  constructor (address _giver, address _consentTemplate) public
   {
     giver = _giver;
     owner = tx.origin;
@@ -137,7 +137,7 @@ contract Consent {
   {
     if (_status == Status.denied || _status == Status.accepted) {
       status = _status;
-      ConsentStatusChanged (this, owner, giver, _status);
+      emit ConsentStatusChanged (address(this), owner, giver, _status);
     }
   }
 
@@ -145,35 +145,35 @@ contract Consent {
   function cancel () onlyBy (owner) public
   {
     status = Status.cancelled;
-    ConsentStatusChanged (this, owner, giver, Status.cancelled);
+    emit ConsentStatusChanged (address(this), owner, giver, Status.cancelled);
   }
   
   /* Returns the status of the consent */    
-  function getStatus() public constant returns (Status)
+  function getStatus() public view returns (Status)
   {
     return status;
   }
 
   /* Returns the consent template that this consent is based on */
-  function getTemplate() public constant returns (ConsentTemplate)
+  function getTemplate() public view returns (ConsentTemplate)
   {
     return ConsentTemplate(consentTemplate);
   }
 
   /* Returns with the giver */
-  function getGiver() public constant returns (address)
+  function getGiver() public view returns (address)
   {
     return giver;
   }
   
   /* Returns with teh giver */
-  function getOwner() public constant returns (address)
+  function getOwner() public view returns (address)
   {
     return owner;
   }
   
   /* Function to recover the funds on the contract */
-  function kill() { if (tx.origin == owner) selfdestruct(owner); }
+  function kill() public { if (tx.origin == owner) selfdestruct(owner); }
 }
 
 /*
@@ -204,7 +204,7 @@ contract ConsentFile {
   }
   
   /* The constructor of the file. Also attaches it to an owner */
-  function ConsentFile (address _giver) public
+  constructor (address _giver) public
   {
     owner = tx.origin;
     creator = msg.sender;
@@ -215,17 +215,17 @@ contract ConsentFile {
   function addConsent (address _consent) public 
   {
     listOfConsents.push (_consent);
-    ConsentFileConsentAdded (this, owner, giver, _consent);
+    emit ConsentFileConsentAdded (address(this), owner, giver, _consent);
   }
 
   /* Retrieve a list of all consents in the file */
-  function getListOfConsents () public constant returns (address[])
+  function getListOfConsents () public view returns (address[] memory)
   {
     return listOfConsents;
   }
 
   /* Retrieves the owner */
-  function getGiver () public constant returns (address)
+  function getGiver () public view returns (address)
   {
     return giver;
   }
@@ -249,7 +249,7 @@ contract ConsentFactory {
   }
   
   /* The owner of this contract */
-  address private owner;  /* Who owns this Consent Facotory, this is a company */
+  address payable private owner;  /* Who owns this Consent Facotory, this is a company */
   address private creator; /* Who created this factory */
   string  private company;  /* Company that created this */
   
@@ -275,7 +275,7 @@ contract ConsentFactory {
   }
   
   /* Constructor for the consent factory */
-  function ConsentFactory(string _company, address _owner) public
+  constructor (string memory _company, address payable _owner) public
   {
     owner = _owner;
     creator = msg.sender;
@@ -283,11 +283,11 @@ contract ConsentFactory {
   }
 
   /* Adds a consent template to the factory to be used for consent generation. Should have a modifier for the company. */
-  function addConsentTemplate (string _purpouse, uint _version, string _title, string _text, string _languageCountry) public
+  function addConsentTemplate (string memory _purpouse, uint _version, string memory _title, string memory _text, string memory _languageCountry) public
   {
     /* Add the template for the specific language, country and purpouse */
     uint ix = consentTemplates[_purpouse][_languageCountry];
-    address ct = new ConsentTemplate (company, _purpouse, _version, _title, _text, _languageCountry);
+    address ct = address(new ConsentTemplate (company, _purpouse, _version, _title, _text, _languageCountry));
     if (ix == 0) {
       ix = listOfActiveConsentTemplates.push (ct);
       consentTemplates[_purpouse][_languageCountry] = ix;
@@ -295,17 +295,17 @@ contract ConsentFactory {
       listOfActiveConsentTemplates[ix-1] = ct;
     }
     listOfAllConsentTemplates.push(ct);
-    ConsentFactoryTemplateAddedEvent (this, owner, ct);    
+    emit ConsentFactoryTemplateAddedEvent (address(this), owner, ct);    
   }
 
   /* Returns with a list of active consent templates */
-  function getActiveConsentTemplates() onlyBy (owner) public constant returns (address[])
+  function getActiveConsentTemplates() onlyBy (owner) public view returns (address[] memory)
   {
     return listOfActiveConsentTemplates;
   }
   
   /* Returns with a list of all consent templates */
-  function getAllConsentTemplates() onlyBy (owner) public constant returns (address[])
+  function getAllConsentTemplates() onlyBy (owner) public view returns (address[] memory)
   {
     return listOfAllConsentTemplates;
   }
@@ -316,8 +316,8 @@ contract ConsentFactory {
    */
   function createConsentFile (address _user) onlyBy (owner) public
   {
-    address file = new ConsentFile (_user);
-    ConsentFactoryFileCreatedEvent(this, owner, _user, file);
+    address file = address(new ConsentFile (_user));
+    emit ConsentFactoryFileCreatedEvent(address(this), owner, _user, file);
   }
   
   /* Create a consent for a specific purpouse of the latest version, language and country.
@@ -326,26 +326,26 @@ contract ConsentFactory {
    * default to countrys default language if it exists otherwise it will fail. It adds
    * the consent to the users file as well. Should have a modifier for the company only.
    */
-  function createConsent (address _file, string _purpouse, string _languageCountry) onlyBy (owner) public
+  function createConsent (address _file, string memory _purpouse, string memory _languageCountry) onlyBy (owner) public
   {
     ConsentFile cf = ConsentFile (_file);
     ConsentTemplate ct = getTemplate (_purpouse, _languageCountry);
-    if (ct != address(0)) {
+    if (address(ct) != address(0)) {
 
       /* We got a template so generate the consent and put it into the consent file */
-      Consent consent = new Consent (cf.getGiver(), ct);
-      ConsentFile(_file).addConsent (consent);
-      ConsentFactoryConsentCreatedEvent(this, owner, cf.getGiver(), _file, consent);
+      Consent consent = new Consent (cf.getGiver(), address(ct));
+      ConsentFile(_file).addConsent (address(consent));
+      emit ConsentFactoryConsentCreatedEvent(address(this), owner, cf.getGiver(), _file, address(consent));
 
     } else {
       
-      ConsentFactoryFailedEvent(this, owner, cf.getGiver(), Error.no_such_template);
+      emit ConsentFactoryFailedEvent(address(this), owner, cf.getGiver(), Error.no_such_template);
       
     }
   }
   
   /* This function tests wether a consent for a specific purpouse exists or not */
-  function getTemplate (string _purpouse, string _languageCountry) constant internal returns (ConsentTemplate)
+  function getTemplate (string memory _purpouse, string memory _languageCountry) view internal returns (ConsentTemplate)
   {
     /* Get the consents for a specific purpouse and language, country*/
     uint ix = consentTemplates[_purpouse][_languageCountry];
@@ -355,7 +355,7 @@ contract ConsentFactory {
       /* So we need to strip the language from the country */
       bytes memory b = bytes (_languageCountry);
       if (b.length==5) {
-	if (b[2] == 45) {
+	if (uint8(b[2]) == 45) {
     	  bytes memory c = new bytes(2);
 	  
 	  /* Get the country */
@@ -378,9 +378,9 @@ contract ConsentFactory {
   {
     if(_status == Consent.Status.accepted || _status == Consent.Status.denied) {
       _consent.setStatus (_status);
-      ConsentFactoryConsentStatusChangedEvent (this, _consent.getOwner(), _consent.getGiver(), _consent, _status);
+      emit ConsentFactoryConsentStatusChangedEvent (address(this), _consent.getOwner(), _consent.getGiver(), _consent, _status);
     } else {
-      ConsentFactoryFailedEvent (this, _consent.getOwner(), _consent.getGiver(), Error.only_accepted_or_denied);
+      emit ConsentFactoryFailedEvent (address(this), _consent.getOwner(), _consent.getGiver(), Error.only_accepted_or_denied);
     }
   }
   
@@ -388,23 +388,23 @@ contract ConsentFactory {
   function cancelConsent(Consent _consent) onlyBy (_consent.getOwner()) public
   {
     _consent.cancel();
-    ConsentFactoryConsentStatusChangedEvent (this, _consent.getOwner(), _consent.getGiver(), _consent, Consent.Status.cancelled);
+    emit ConsentFactoryConsentStatusChangedEvent (address(this), _consent.getOwner(), _consent.getGiver(), _consent, Consent.Status.cancelled);
   }
 
   /* The company who has this factory */
-  function getCompany() public constant returns (string)
+  function getCompany() public view returns (string memory)
   {
     return company;
   }
 
   /* Returns the owner for the factory */
-  function getOwner() public constant returns (address)
+  function getOwner() public view returns (address)
   {
     return owner;
   }
   
   /* Function to recover the funds on the contract */
-  function kill() { if (msg.sender == owner) selfdestruct(owner); }
+  function kill() public { if (msg.sender == owner) selfdestruct(owner); }
 }
 
 /*

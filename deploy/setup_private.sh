@@ -6,5 +6,5 @@
 #
 rm -fR ~/.consent/geth
 rm -f ~/.consent/history
-geth --identity "PermobilTest" --datadir "~/.consent" --networkid 1967 init "genesis.json"
+geth --identity "ConsentChain" --datadir "~/.consent" --networkid 1969 init "genesis.json"
 
