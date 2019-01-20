@@ -1,0 +1,6 @@
+{
+	"certificate":"/home/tomas/ethereum/consent.cert.pem",
+	"privateKey": "/home/tomas/ethereum/consent.key.pem",
+	"ca": "/home/tomas/ethereum/ca.cert.pem",
+	"ica": "/home/tomas/ethereum/proto.cert.pem"
+}

@@ -12,7 +12,6 @@ tramp
 sol/generated/*
 sol/generated
 .node*
-node/consent/config.json
 node_modules
 deployment/local/password.cfg
 
